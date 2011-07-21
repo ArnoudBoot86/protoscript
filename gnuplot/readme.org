@@ -1,0 +1,16 @@
+Scripts in the gnuplot directory
+* bwstop -- Fit a frequency response to a first-order lowpass
+  - Also restricts frequencies to be positive
+* plotbw -- Plot a few frequency responses and overlay a flatband line
+  - Allows adding +/- 1% tolerance lines
+* polezero -- Simulate adding a pole and a zero to a response
+  - Plots the actual frequency response and the response multiplied by the pole and the zero responses.
+* print -- Dump a postscript and a png of the current plot
+* plotlcr -- Plot R and C data taken with sr830_lcr
+* npulse -- Plot processed normal pulse data
+  - Data is in the format: E <tab> (difference I)
+  - Usage: call 'npulse.gp' 'data1.dif' ('data2.dif') ('data3.dif')
+* rawpulsev -- Plot time-series voltage data from a pulse experiment
+  - Data is in the format: Time <tab> Voltage
+  - Usage: call 'rawpulsev.gp' 'data1.dat' ('data2.dat') ('data3.dat')
+* scopeplot -- Plot ascii dump data taken with tds2014c scope

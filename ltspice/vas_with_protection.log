@@ -1,0 +1,19 @@
+Circuit: * C:\Documents and Settings\jpeck\My Documents\ec100\anal_ctrl_board\sims\vas_with_protection.asc
+
+Direct Newton iteration for .op point succeeded.
+Date: Wed Jul 18 10:21:48 2007
+Total elapsed time: 0.015 seconds.
+
+tnom = 27
+temp = 27
+method = modified trap
+totiter = 844
+traniter = 828
+tranpoints = 415
+accept = 319
+rejected = 96
+trancuriters = 0
+matrix size = 17
+fillins = 13
+solver = Normal
+

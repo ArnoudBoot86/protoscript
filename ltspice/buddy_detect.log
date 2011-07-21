@@ -1,0 +1,41 @@
+Circuit: * C:\Documents and Settings\jpeck\My Documents\ec100\anal_ctrl_board\sims\buddy_detect.asc
+
+Direct Newton iteration for .op point succeeded.
+Semiconductor Device Operating Points:
+                        --- Bipolar Transistors ---
+Name:       q1
+Model:    2n3904
+Ib:       8.28e-09
+Ic:       2.59e-06
+Vbe:      5.00e-01
+Vbc:     -4.38e+00
+Vce:      4.88e+00
+BetaDC:   3.13e+02
+Gm:       1.00e-04
+Rpi:      3.12e+06
+Rx:       2.00e+01
+Ro:       4.02e+07
+Cbe:      1.12e-11
+Cbc:      2.12e-12
+Cjs:      0.00e+00
+BetaAC:   3.13e+02
+Cbx:      0.00e+00
+Ft:       1.20e+06
+
+
+Date: Tue Nov 20 17:46:37 2007
+Total elapsed time: 0.016 seconds.
+
+tnom = 27
+temp = 27
+method = trap
+totiter = 5
+traniter = 0
+tranpoints = 0
+accept = 0
+rejected = 0
+trancuriters = 5
+matrix size = 9
+fillins = 0
+solver = Normal
+

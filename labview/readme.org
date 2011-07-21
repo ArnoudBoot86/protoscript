@@ -1,0 +1,3 @@
+* Use [[file:sr830_lcr.llb][sr830_lcr]] to make the sr830 into a poor-man's lcr meter.
+  - Realize that you have to set the sr830's sensitivity by hand, and that you should probably keep this the same between taking the background and the foreground.
+  - You also need to set the float/ground switch manually.
