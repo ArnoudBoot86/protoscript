@@ -1,10 +1,21 @@
-# plotbw.gp # Plots up to 3 bandwidth magnitude measurements made with 
-# bode_sweeper.vi 
-# Datafiles are in three tab-delimited columns: 
-# frequency (Hz)    Magnitude (linear)    Phase (degrees) 
-# 
-# Overlays a "flatband" amplitude line to guide the eye # 
-# Usage: call 'plotbw.gp' 'data1.dat' ('data2.dat') ('data3.dat')
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Name: plotbw.gp 
+#
+# Description:  Plots up to 3 bandwidth magnitude measurements made with 
+#               a frequency response analyzer (such as the LabVIEW
+#               script bode_sweeper.vi used with the hp4192a impedance
+#               analyzer.
+#
+#               Fits the first datafile to a constant "flatband" parameter
+#               to show the gain of the system at low frequencies.
+#               Use the bwstop.gp script instead to fit a system to a 
+#               first-order lowpass.
+#
+# Datafiles:    Datafiles are in three whitespace-delimited columns: 
+#               frequency (Hz)    Magnitude (linear)    Phase (degrees) 
+#
+# Usage:        gnuplot> call 'plotbw.gp' 'data1.dat' ('data2.dat') ('data3.dat')
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 reset
 set logscale x

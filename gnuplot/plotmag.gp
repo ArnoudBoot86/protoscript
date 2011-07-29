@@ -1,12 +1,18 @@
-#plotmag.gp
-#Plots bandwidth magnitude measurements and overlays a first-order
-#lowpass
+#------------------------ plotmag.gp -----------------------------------
+# plotmag.gp
+# Plots bandwidth magnitude measurements and overlays a first-order
+# lowpass
 #
-#Usage: call 'plotmag.gp' 'datafile.dat'
+# Usage: call 'plotmag.gp' 'datafile.dat'
+# 
+# Author: John Peck
+# Date: July 29, 2011
+#-----------------------------------------------------------------------
 reset
+datapath = "../../2011-jul-29/"
 
 # flatamp = 4.165e-4	#Passband gain
-# flatamp = 2.065
+flatamp = 2.4e-3
 
 set logscale x
 #Uncomment these next two lines when using log scaling for y
@@ -28,7 +34,8 @@ set yrange [0.5:3]
 
 
 #Data file from bode_sweeper is frequency, magnitude, degrees
-plot '$0' using 1:2 with lines
+plot datapath.'$0' using 1:2 \
+    title datapath.'$0' with lines
 #replot '$0' using (5,1e7):(flatamp) title 'Passband amplitude' with lines
 replot flatamp title 'Passband amplitude'
 #replot '$0' using 1:(flatamp * 0.707) title '3dB corner' with lines
