@@ -17,7 +17,7 @@ import Gnuplot, Gnuplot.funcutils # For gnuplot.py
 gpibchan = 6    # PAR273 GPIB channel
 gpibwait = 10e-3 # Seconds to wait between GPIB writes
 tbase = 10e-3   # Timebase in seconds
-ivrange = -4    # I/V converter range in log10(amps)
+ivrange = -3    # I/V converter range in log10(amps)
 """ Choose the egain value:
     egain           Voltage range
     -----------------------------
@@ -59,7 +59,7 @@ restime = 0.5    # Resting time between pulses in seconds
     have reasonable scan length.  The pulse sample is taken on the last
     point in the pulse, so the pulse must be longer than 10ms. """
 plstime = .5   # Pulsing time in seconds
-datadir = '../../2011-jul-20'
+datadir = '../../2011-aug-2'
 basename = 'partest'
 
 # --------------- End measurement configuration ------------------------
@@ -148,8 +148,8 @@ def defaults():
     Sets some defaults for the experiment. """
 def initialize():
     instr = get273()
-    defaults() # Set factory defaults
-    send273(instr, 'CLEAR') # Clear all curve data
+    # defaults() # Set factory defaults
+    # send273(instr, 'CLEAR') # Clear all curve data
     send273(instr, 'MODE 2') # Set instrument mode
     send273(instr, 'AR 0') # Disable autoranging
     send273(instr, 'I/E ' + str(ivrange)) # Set current range
@@ -464,11 +464,15 @@ def savedata(pardata):
 def main():
     initialize()
     showdrive()
-    upload()
+    upchoice = raw_input('Upload new waveform? (y/n) > ')
+    if upchoice == 'y':
+        upload()
     datadict = takedata()
-    pardata = download() # Download curve data from instrument
-    pardata = makediffs(pardata) # Add the difference keys
-    savedata(pardata)
+    dnchoice = raw_input('Download data? (y/n) > ')
+    if dnchoice == 'y':
+        pardata = download() # Download curve data from instrument
+        pardata = makediffs(pardata) # Add the difference keys
+        savedata(pardata)
     
 if __name__ == '__main__':
      main()

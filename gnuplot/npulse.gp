@@ -5,7 +5,7 @@
 #
 # Usage: call 'npulse.gp' 'data1.dif' ('data2.dif') ('data3.dif')
 reset
-datapath = "../../2011-jul-20/"
+datapath = "../../2011-aug-2/"
 # set format x '%0.1s %c'
 set format y '%1.0s %c'
 set title 'npulse.gp'
