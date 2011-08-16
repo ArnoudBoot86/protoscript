@@ -18,7 +18,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 reset
 # Set the relative (or absolute) path to your datafiles.  
-datapath = "../../2011-jul-29/"
+datapath = "../../2011-aug-3/"
 
 set logscale x
 # set logscale y
