@@ -2,6 +2,9 @@
     A collection of functions useful for testing with the ds345 """
 import visa
 
+#--------------------- Instrument-specific variables -------------------
+gpibchan = 19
+#-----------------------------------------------------------------------
 
 
 """ gethandle(GPIB channel)
@@ -27,7 +30,7 @@ def sendbus(handle,string):
         setup function. """
 def onesquare(handle,freq,vpp):
     sendbus(handle,'freq ' + '%0.3f'%(freq))
-    sendbus(handle,'ampl ' + str(vpp) + 'VP')
+    sendbus(handle,'ampl ' + '%0.3f'%(vpp) + 'VP')
     sendbus(handle,'func 1') # Set square wave output
     sendbus(handle,'offs 0') # No offset
     sendbus(handle,'pclr') # Waveform output starts with phase zero
@@ -36,3 +39,12 @@ def onesquare(handle,freq,vpp):
     sendbus(handle,'bcnt 1') # One burst
     sendbus(handle,'tsrc 0') # Single trigger -- *TRG triggers the burst
     print('Send *TRG to trigger the burst.')
+    
+""" squareout(handle, frequency (Hz), Vpp (volts))
+    *   Set up the ds345 to output a square wave """
+def squareout(handle,freq,vpp):
+    sendbus(handle,'freq ' + '%0.3f'%(freq))
+    sendbus(handle,'ampl ' + '%0.3f'%(vpp) + 'VP')
+    sendbus(handle,'func 1') # Set square wave output
+    sendbus(handle,'offs 0') # No offset
+    sendbus(handle,'pclr') # Waveform output starts with phase zero

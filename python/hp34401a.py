@@ -1,6 +1,12 @@
 """ hp34401a.py
     Functions related to controlling the hp34401a multimeter """
 import visa
+import decimal as D
+
+#--------------------- Instrument-specific variables -------------------
+gpibchan = 24
+#-----------------------------------------------------------------------
+
 
 """ gethandle(GPIB channel)
     Return a handle for gpib communications with the hp34401a """
@@ -39,7 +45,8 @@ def rmeasinit(dmm):
     ranges -- the meter will pick the best range."""
 def onevmeas(handle,vrange,resolution):
     sendbus(handle,'conf:volt:dc ' + '%0.3f'%(vrange) +
-        ',' + '%0.4f'%(resolution))
+        ',' + '%0.4f'%(D.Decimal(resolution)/1000))
+    sendbus(handle,'sens:volt:dc:nplc 10') # Integrate for 10 line cycles
     sendbus(handle,'trig:sour bus')
     sendbus(handle,'samp:coun 1')
 
