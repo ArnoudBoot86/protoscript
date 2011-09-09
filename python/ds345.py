@@ -1,6 +1,8 @@
 """ ds345.py
     A collection of functions useful for testing with the ds345 """
 import visa
+import math
+import decimal as D
 
 #--------------------- Instrument-specific variables -------------------
 gpibchan = 19
@@ -48,3 +50,27 @@ def squareout(handle,freq,vpp):
     sendbus(handle,'func 1') # Set square wave output
     sendbus(handle,'offs 0') # No offset
     sendbus(handle,'pclr') # Waveform output starts with phase zero
+    
+""" dcvolt(handle, DC voltage (volts))
+    *   Uses the DS345 as a DC voltage source, with -10V to 10V available.
+        The voltage takes about 1/2 second to set up, so this isn't for
+        making square waves. 
+    *   Remember that these are voltages into high impedance, with a 50ohm
+        output resistor inside the DS345. """
+def dcvolt(handle, voltage):
+    voltage = D.Decimal(voltage)
+    if voltage < 0:
+        isneg = True
+    else:
+        isneg = False
+    absvolt = math.fabs(voltage)
+    sendbus(handle,'freq 1')
+    sendbus(handle,'ampl ' + '%0.3f'%(absvolt) + 'VP')
+    sendbus(handle,'func 1') # Set square wave output
+    sendbus(handle,'offs 0') # No offset
+    sendbus(handle,'mena 1') # Enable modulation
+    sendbus(handle,'mtyp 5') # Set burst modulation
+    if isneg:
+        sendbus(handle,'phse 180')
+    else:
+        sendbus(handle,'phse 0')
