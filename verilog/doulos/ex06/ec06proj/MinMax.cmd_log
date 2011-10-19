@@ -1,0 +1,1 @@
+xst -intstyle ise -ifn "C:/training/verilog/ex06/ec06proj/MinMax.xst" -ofn "C:/training/verilog/ex06/ec06proj/MinMax.syr" 

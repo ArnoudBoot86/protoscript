@@ -1,0 +1,28 @@
+Command line:
+   RamChipTF_isim_beh.exe
+     -simmode  gui
+     -simrunnum  0
+     -socket  2475
+
+Thu Oct 13 17:05:01 2011
+
+
+ Elaboration Time: 0.109375 sec
+
+ Current Memory Usage: 465.412 Meg
+
+ Total Signals          : 18
+ Total Nets             : 31
+ Total Signal Drivers   : 11
+ Total Blocks           : 3
+ Total Primitive Blocks : 2
+ Total Processes        : 14
+ Total Traceable Variables  : 29
+ Total Scalar Nets and Variables : 330
+
+ Total Simulation Time: 0.140625 sec
+
+ Current Memory Usage: 309.174 Meg
+
+Thu Oct 13 17:33:00 2011
+

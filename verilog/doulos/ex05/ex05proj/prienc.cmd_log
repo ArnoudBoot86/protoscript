@@ -1,0 +1,6 @@
+vhdtdtfi -lib work C:/training/verilog/ex04/source/prienc.v -lang verilog -prj ex05proj -o prienc.spl -module prienc -template C:/Xilinx/13.1/ISE_DS/ISE//data/splveri.tft -deleteonerror 
+spl2sym -intstyle ise -family spartan6 prienc.spl C:/training/verilog/ex05/ex05proj/prienc.sym 
+xst -intstyle ise -ifn "C:/training/verilog/ex05/ex05proj/prienc.xst" -ofn "C:/training/verilog/ex05/ex05proj/prienc.syr" 
+xst -intstyle ise -ifn "C:/training/verilog/ex05/ex05proj/prienc.xst" -ofn "C:/training/verilog/ex05/ex05proj/prienc.syr" 
+xst -intstyle ise -ifn "C:/training/verilog/ex05/ex05proj/prienc.xst" -ofn "C:/training/verilog/ex05/ex05proj/prienc.syr" 
+netgen -intstyle ise -insert_glbl true -w -dir netgen/synthesis -ofmt verilog -sim prienc.ngc prienc_synthesis.v 

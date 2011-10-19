@@ -1,0 +1,1 @@
+xst -intstyle ise -ifn "C:/training/verilog/ex08/ex08proj/shifter.xst" -ofn "C:/training/verilog/ex08/ex08proj/shifter.syr" 

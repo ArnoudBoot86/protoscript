@@ -1,0 +1,6 @@
+xst -intstyle ise -ifn "C:/training/verilog/ex03/implement/Spartan6/decoder.xst" -ofn "C:/training/verilog/ex03/implement/Spartan6/decoder.syr" 
+ngdbuild -intstyle ise -dd _ngo -nt timestamp -uc C:/training/verilog/ex03/source/board_support/spartan6.ucf -p xc6slx45t-fgg484-2 decoder.ngc decoder.ngd  
+map -intstyle ise -p xc6slx45t-fgg484-2 -w -logic_opt off -ol high -t 1 -xt 0 -register_duplication off -r 4 -global_opt off -mt off -ir off -pr off -lc off -power off -o decoder_map.ncd decoder.ngd decoder.pcf 
+par -w -intstyle ise -ol high -mt off decoder_map.ncd decoder.ncd decoder.pcf 
+trce -intstyle ise -v 3 -s 2 -n 3 -fastpaths -xml decoder.twx decoder.ncd -o decoder.twr decoder.pcf 
+bitgen -intstyle ise -f decoder.ut decoder.ncd 

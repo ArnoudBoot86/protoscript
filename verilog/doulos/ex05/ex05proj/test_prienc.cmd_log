@@ -1,0 +1,2 @@
+xst -intstyle ise -ifn "C:/training/verilog/ex05/ex05proj/test_prienc.xst" -ofn "C:/training/verilog/ex05/ex05proj/test_prienc.syr" 
+ngdbuild -intstyle ise -dd _ngo -nt timestamp -i -p xc6slx45t-fgg484-3 test_prienc.ngc test_prienc.ngd  

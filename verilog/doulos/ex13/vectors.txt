@@ -1,0 +1,52 @@
+// Sample test vector file.  You can write your test 
+// fixture to read this file correctly, or alternatively
+// you can modify this file so that it works with the
+// way you have written your test fixture.
+// 
+// NOTE: Lines in this file that start with a letter V
+// are test vector lines.  Lines that start with any
+// other character are comments.  Extra text after the
+// end of a test vector is comment and should be ignored.
+// Blank lines are also comments, and should be ignored.
+//
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+// VECTOR FORMAT:
+// 
+// nSysReset }
+// |         }  Input stimulus
+// | Buttons }
+// | [12]
+// |  ||  WatchRunning }  Expected outputs
+// |  ||  |WatchReset  }  from DUT
+// |  ||  ||
+V  0  XX  00   // test for reset
+
+V  1  00  00   // 3 cycles with no activity
+V  1  00  00
+V  1  00  00
+
+V  1  10  10   // Press Buttons[1] to start
+V  1  00  10   // Release Buttons[1]
+
+V  1  10  00   // Press Buttons[1] to stop
+V  1  00  00   // Release Buttons[1]
+
+V  1  01  01   // Press Buttons[2] to reset
+V  1  00  00   // Release Buttons[2]
+
+V  1  10  10   // Press Buttons[1] to start
+V  1  00  10   // Release Buttons[1]
+
+V  1  10  00   // Press Buttons[1] to stop
+V  1  00  00   // Release Buttons[1]
+
+// Now we should be in the Stopped state
+
+V  1  10  10   // Press Buttons[1] to start
+V  1  00  10   // Release Buttons[1]
+
+V  1  10  00   // Press Buttons[1] to stop
+V  1  00  00   // Release Buttons[1]
+
+// That's All Folks...

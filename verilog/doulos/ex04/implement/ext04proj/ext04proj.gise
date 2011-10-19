@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<generated_project xmlns="http://www.xilinx.com/XMLSchema" xmlns:xil_pn="http://www.xilinx.com/XMLSchema">
+
+  <!--                                                          -->
+
+  <!--             For tool use only. Do not edit.              -->
+
+  <!--                                                          -->
+
+  <!-- ProjectNavigator created generated project file.         -->
+
+  <!-- For use in tracking generated file and other information -->
+
+  <!-- allowing preservation of process status.                 -->
+
+  <!--                                                          -->
+
+  <!-- Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved. -->
+
+  <version xmlns="http://www.xilinx.com/XMLSchema">11.1</version>
+
+  <sourceproject xmlns="http://www.xilinx.com/XMLSchema" xil_pn:fileType="FILE_XISE" xil_pn:name="ext04proj.xise"/>
+
+  <files xmlns="http://www.xilinx.com/XMLSchema">
+    <file xil_pn:fileType="FILE_XMSGS" xil_pn:name="_xmsgs/xst.xmsgs"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="decoder_isim_beh.exe"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="decoder_stx_beh.prj"/>
+    <file xil_pn:fileType="FILE_LOG" xil_pn:name="fuse.log"/>
+    <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="isim"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_CMD" xil_pn:name="isim.cmd"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_LOG" xil_pn:name="isim.log"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="prienc.prj"/>
+    <file xil_pn:fileType="FILE_SPL" xil_pn:name="prienc.spl"/>
+    <file xil_pn:fileType="FILE_XST_STX" xil_pn:name="prienc.stx"/>
+    <file xil_pn:fileType="FILE_SYMBOL" xil_pn:name="prienc.sym" xil_pn:origination="imported"/>
+    <file xil_pn:fileType="FILE_VERILOG_INSTTEMPLATE" xil_pn:name="prienc.tfi"/>
+    <file xil_pn:fileType="FILE_XST" xil_pn:name="prienc.xst"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="prienc_stx_beh.prj"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="test_prienc_beh.prj"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="test_prienc_isim_beh.exe"/>
+    <file xil_pn:fileType="FILE_ISIM_MISC" xil_pn:name="test_prienc_isim_beh.wdb"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="test_prienc_stx_beh.prj"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_INI" xil_pn:name="xilinxsim.ini"/>
+    <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="xst"/>
+  </files>
+
+  <transforms xmlns="http://www.xilinx.com/XMLSchema">
+    <transform xil_pn:end_ts="1318376863" xil_pn:name="TRAN_copyInitialToAbstractSimulation" xil_pn:start_ts="1318376863">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1318378810" xil_pn:in_ck="5994404296388970722" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1318378810">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <outfile xil_pn:name="../../../ex03/source/decoder.v"/>
+      <outfile xil_pn:name="../../../ex03/source/decoder_tf.v"/>
+      <outfile xil_pn:name="../../source/prienc.v"/>
+      <outfile xil_pn:name="../../source/test_prienc.v"/>
+    </transform>
+    <transform xil_pn:end_ts="1318378265" xil_pn:name="TRAN_xawsToSimhdl" xil_pn:prop_ck="-2465978218528406921" xil_pn:start_ts="1318378265">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1318378265" xil_pn:name="TRAN_schematicsToHdlSim" xil_pn:prop_ck="-973016662392854475" xil_pn:start_ts="1318378265">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1318378265" xil_pn:name="TRAN_regenerateCoresSim" xil_pn:prop_ck="-1498279280258423144" xil_pn:start_ts="1318378265">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1318378810" xil_pn:in_ck="5994404296388970722" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1318378810">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <outfile xil_pn:name="../../../ex03/source/decoder.v"/>
+      <outfile xil_pn:name="../../../ex03/source/decoder_tf.v"/>
+      <outfile xil_pn:name="../../source/prienc.v"/>
+      <outfile xil_pn:name="../../source/test_prienc.v"/>
+    </transform>
+    <transform xil_pn:end_ts="1318378811" xil_pn:in_ck="5994404296388970722" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="-6383151440466446739" xil_pn:start_ts="1318378810">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForOutputs"/>
+      <status xil_pn:value="OutputChanged"/>
+      <outfile xil_pn:name="fuse.log"/>
+      <outfile xil_pn:name="isim"/>
+      <outfile xil_pn:name="isim.log"/>
+      <outfile xil_pn:name="test_prienc_beh.prj"/>
+      <outfile xil_pn:name="test_prienc_isim_beh.exe"/>
+      <outfile xil_pn:name="xilinxsim.ini"/>
+    </transform>
+    <transform xil_pn:end_ts="1318378812" xil_pn:in_ck="-1247275810869379852" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="-6208491060598851056" xil_pn:start_ts="1318378811">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForOutputs"/>
+      <status xil_pn:value="OutputChanged"/>
+      <outfile xil_pn:name="isim.cmd"/>
+      <outfile xil_pn:name="isim.log"/>
+      <outfile xil_pn:name="test_prienc_isim_beh.wdb"/>
+    </transform>
+  </transforms>
+
+</generated_project>

@@ -1,0 +1,2 @@
+verilog work "../../ex04/source/prienc.v"
+verilog work "../../ex04/source/test_prienc.v"

@@ -1,0 +1,8 @@
+INTSTYLE=ise
+INFILE=C:\training\verilog\ex03\implement\Spartan6\decoder.ncd
+OUTFILE=C:\training\verilog\ex03\implement\Spartan6\decoder.bit
+FAMILY=Spartan6
+PART=xc6slx45t-2fgg484
+WORKINGDIR=C:\training\verilog\ex03\implement\Spartan6
+LICENSE=ISE
+USER_INFO=176921621_172397659_204777314_207

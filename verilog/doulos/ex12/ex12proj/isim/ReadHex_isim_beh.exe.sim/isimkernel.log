@@ -1,0 +1,28 @@
+Command line:
+   ReadHex_isim_beh.exe
+     -simmode  gui
+     -simrunnum  0
+     -socket  2588
+
+Fri Oct 14 13:31:17 2011
+
+
+ Elaboration Time: 0.109375 sec
+
+ Current Memory Usage: 465.416 Meg
+
+ Total Signals          : 12
+ Total Nets             : 12
+ Total Signal Drivers   : 5
+ Total Blocks           : 6
+ Total Primitive Blocks : 2
+ Total Processes        : 7
+ Total Traceable Variables  : 35
+ Total Scalar Nets and Variables : 3677
+
+ Total Simulation Time: 10.2031 sec
+
+ Current Memory Usage: 466.465 Meg
+
+Fri Oct 14 13:31:29 2011
+

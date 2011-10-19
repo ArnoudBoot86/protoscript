@@ -1,0 +1,99 @@
+# User Constraint File for FMC-CE card when attached to a Xilinx SP605
+# pin locations only!
+#
+# 2/19/2010
+#
+#
+# Device
+# spartan6 xc6slx45t fgg484 SPEED_GRADE = -2 ?ES silicon boards?
+# spartan6 xc6slx45t fgg484 SPEED_GRADE = -3 ?production silicon boards?
+#
+# *** peripherals ***
+#
+# LCD
+NET "LCD_data_pins<0>" LOC = "W8"; # gpio_lcd_db8
+NET "LCD_data_pins<1>" LOC = "V11";
+NET "LCD_data_pins<2>" LOC = "W11";
+NET "LCD_data_pins<3>" LOC = "W14";
+NET "LCD_data_pins<4>" LOC = "Y11";
+NET "LCD_data_pins<5>" LOC = "A17";
+NET "LCD_data_pins<6>" LOC = "C17";
+NET "LCD_data_pins<7>" LOC = "R8";
+NET "LCD_data_pins<*>" IOSTANDARD = LVCMOS25 | DRIVE = 4 | SLEW = SLOW;
+NET "LCD_E_pin" LOC = "V7" | PULLDOWN | IOSTANDARD = LVCMOS25;
+NET "LCD_RS_pin" LOC = "T11" | IOSTANDARD = LVCMOS25;
+NET "LCD_RW_pin" LOC = "R11" | IOSTANDARD = LVCMOS25;
+# linear LEDs (8)
+NET "LED_linear_pins<7>" LOC = "AB11";
+NET "LED_linear_pins<6>" LOC = "T12";
+NET "LED_linear_pins<5>" LOC = "U12";
+NET "LED_linear_pins<4>" LOC = "U9";
+NET "LED_linear_pins<3>" LOC = "V9";
+NET "LED_linear_pins<2>" LOC = "AA10";
+NET "LED_linear_pins<1>" LOC = "U14";
+NET "LED_linear_pins<0>" LOC = "U13";
+NET "LED_linear_pins<*>" IOSTANDARD = LVCMOS25 | DRIVE = 4 | SLEW = SLOW;
+11
+# rosetta leds (5)
+NET "LED_rosetta_pins<0>" LOC = "A20"; # CONN_BUT_LED0 - center
+NET "LED_rosetta_pins<1>" LOC = "A5"; # CONN_BUT_LED1 - west
+NET "LED_rosetta_pins<2>" LOC = "G15"; # CONN_BUT_LED2 - north
+NET "LED_rosetta_pins<3>" LOC = "G13"; # CONN_BUT_LED3 - east
+NET "LED_rosetta_pins<4>" LOC = "H14"; # CONN_BUT_LED4 - south
+NET "LED_rosetta_pins<*>" IOSTANDARD = LVCMOS25 # CONN_BUT-all
+# rosetta buttons (5)
+NET "button_pins<0>" LOC = "B20"; # CONN_BUT0 - center
+NET "button_pins<1>" LOC = "C5"; # CONN_BUT1 - west
+NET "button_pins<2>" LOC = "B2"; # CONN_BUT2 - north
+NET "button_pins<3>" LOC = "H13"; # CONN_BUT3 - east
+NET "button_pins<4>" LOC = "A2"; # CONN_BUT4 - south
+NET "button_pins<*>" IOSTANDARD = LVCMOS25 # CONN_BUT-all
+# slide switches (8)
+NET "switch_pins<0>" LOC = "U16"; # CONN_SLDSW0 - rightmost
+NET "switch_pins<1>" LOC = "AB16"; # CONN_SLDSW1
+NET "switch_pins<2>" LOC = "AA16"; # CONN_SLDSW2
+NET "switch_pins<3>" LOC = "U15"; # CONN_SLDSW3
+NET "switch_pins<4>" LOC = "T15"; # CONN_SLDSW4
+NET "switch_pins<5>" LOC = "AB14"; # CONN_SLDSW5
+NET "switch_pins<6>" LOC = "AA14"; # CONN_SLDSW6
+NET "switch_pins<7>" LOC = "V14"; # CONN_SLDSW7 - leftmost
+NET "switch_pins<*>" IOSTANDARD = LVCMOS25; # CONN_SLDSW-all
+# ROTARY ENCODER & SWITCH
+NET "ROTARY_ENC_A_pin" LOC="R9" | IOSTANDARD = LVCMOS25;
+NET "ROTARY_ENC_B_pin" LOC="D18" | IOSTANDARD = LVCMOS25;
+NET "ROTARY_ENC_SWITCH_pin" LOC="D19" | IOSTANDARD = LVCMOS25;
+# SPI audio dac left
+NET "AUDIO_DAC_left_MOSI_pin" LOC="AB17" | IOSTANDARD = LVCMOS25;
+NET "AUDIO_DAC_left_SCK_pin" LOC="W17" | IOSTANDARD = LVCMOS25;
+NET "AUDIO_DAC_left_SS_pin" LOC="Y18" | IOSTANDARD = LVCMOS25;
+# SPI audio dac right
+NET "AUDIO_DAC_right_MOSI_pin" LOC="AB17" | IOSTANDARD = LVCMOS25;
+NET "AUDIO_DAC_right_SCK_pin" LOC="W17" | IOSTANDARD = LVCMOS25;
+NET "AUDIO_DAC_right_SS_pin" LOC="Y18" | IOSTANDARD = LVCMOS25;
+# Aux I/O 8 bit 2 x 4 connector JA
+NET "AUX_JA<1>" LOC="A19";
+12
+NET "AUX_JA<2>" LOC="C19";
+NET "AUX_JA<3>" LOC="F9";
+NET "AUX_JA<4>" LOC="G8";
+NET "AUX_JA<7>" LOC="A18";
+NET "AUX_JA<8>" LOC="B18";
+NET "AUX_JA<9>" LOC="F10";
+NET "AUX_JA<10>" LOC="G9";
+NET "AUX_JA<*>" IOSTANDARD = LVCMOS25;
+# Aux I/O 8 bit 2 x 4 connector JB
+NET "AUX_JB<1>" LOC="F14";
+NET "AUX_JB<2>" LOC="D4";
+NET "AUX_JB<3>" LOC="C4";
+NET "AUX_JB<4>" LOC="H10";
+NET "AUX_JB<7>" LOC="F15";
+NET "AUX_JB<8>" LOC="D5";
+NET "AUX_JB<9>" LOC="A4";
+NET "AUX_JB<10>" LOC="F7";
+NET "AUX_JB<*>" IOSTANDARD = LVCMOS25;
+# Aux I/O 4 bit 1 x 4 connector JC
+NET "AUX_JC<1>" LOC="H11";
+NET "AUX_JC<2>" LOC="F8";
+NET "AUX_JC<3>" LOC="G16";
+NET "AUX_JC<4>" LOC="HF17";
+NET "AUX_JC<*>" IOSTANDARD = LVCMOS25;

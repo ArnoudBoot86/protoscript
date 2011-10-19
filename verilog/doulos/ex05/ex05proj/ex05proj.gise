@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<generated_project xmlns="http://www.xilinx.com/XMLSchema" xmlns:xil_pn="http://www.xilinx.com/XMLSchema">
+
+  <!--                                                          -->
+
+  <!--             For tool use only. Do not edit.              -->
+
+  <!--                                                          -->
+
+  <!-- ProjectNavigator created generated project file.         -->
+
+  <!-- For use in tracking generated file and other information -->
+
+  <!-- allowing preservation of process status.                 -->
+
+  <!--                                                          -->
+
+  <!-- Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved. -->
+
+  <version xmlns="http://www.xilinx.com/XMLSchema">11.1</version>
+
+  <sourceproject xmlns="http://www.xilinx.com/XMLSchema" xil_pn:fileType="FILE_XISE" xil_pn:name="ex05proj.xise"/>
+
+  <files xmlns="http://www.xilinx.com/XMLSchema">
+    <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="_ngo"/>
+    <file xil_pn:fileType="FILE_XMSGS" xil_pn:name="_xmsgs/ngdbuild.xmsgs"/>
+    <file xil_pn:fileType="FILE_XMSGS" xil_pn:name="_xmsgs/xst.xmsgs"/>
+    <file xil_pn:fileType="FILE_LOG" xil_pn:name="fuse.log"/>
+    <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="isim"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_CMD" xil_pn:name="isim.cmd"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_LOG" xil_pn:name="isim.log"/>
+    <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="netgen"/>
+    <file xil_pn:branch="PostSynthSim" xil_pn:fileType="FILE_NETGEN_REPORT" xil_pn:name="netgen/synthesis/prienc_synthesis.nlf"/>
+    <file xil_pn:branch="PostSynthSim" xil_pn:fileType="FILE_VERILOG" xil_pn:name="netgen/synthesis/prienc_synthesis.v"/>
+    <file xil_pn:fileType="FILE_CMD_LOG" xil_pn:name="prienc.cmd_log"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_LSO" xil_pn:name="prienc.lso"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NGC" xil_pn:name="prienc.ngc"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NGR" xil_pn:name="prienc.ngr"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="prienc.prj"/>
+    <file xil_pn:fileType="FILE_SPL" xil_pn:name="prienc.spl"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_STX" xil_pn:name="prienc.stx"/>
+    <file xil_pn:fileType="FILE_SYMBOL" xil_pn:name="prienc.sym" xil_pn:origination="imported"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_REPORT" xil_pn:name="prienc.syr"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST" xil_pn:name="prienc.xst"/>
+    <file xil_pn:fileType="FILE_HTML" xil_pn:name="prienc_envsettings.html"/>
+    <file xil_pn:fileType="FILE_HTML" xil_pn:name="prienc_summary.html"/>
+    <file xil_pn:fileType="FILE_XRPT" xil_pn:name="prienc_xst.xrpt"/>
+    <file xil_pn:fileType="FILE_NGDBUILD_LOG" xil_pn:name="test_prienc.bld"/>
+    <file xil_pn:fileType="FILE_CMD_LOG" xil_pn:name="test_prienc.cmd_log"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_LSO" xil_pn:name="test_prienc.lso"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NGC" xil_pn:name="test_prienc.ngc"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_NGR" xil_pn:name="test_prienc.ngr"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="test_prienc.prj"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_STX" xil_pn:name="test_prienc.stx"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST_REPORT" xil_pn:name="test_prienc.syr"/>
+    <file xil_pn:branch="Implementation" xil_pn:fileType="FILE_XST" xil_pn:name="test_prienc.xst"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="test_prienc_beh.prj"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_ISIM_EXE" xil_pn:name="test_prienc_isim_beh.exe"/>
+    <file xil_pn:fileType="FILE_ISIM_MISC" xil_pn:name="test_prienc_isim_beh.wdb"/>
+    <file xil_pn:fileType="FILE_XRPT" xil_pn:name="test_prienc_ngdbuild.xrpt"/>
+    <file xil_pn:fileType="FILE_XST_PROJECT" xil_pn:name="test_prienc_stx_beh.prj"/>
+    <file xil_pn:fileType="FILE_XRPT" xil_pn:name="test_prienc_xst.xrpt"/>
+    <file xil_pn:fileType="FILE_FITTER_REPORT" xil_pn:name="webtalk_pn.xml"/>
+    <file xil_pn:branch="BehavioralSim" xil_pn:fileType="FILE_INI" xil_pn:name="xilinxsim.ini"/>
+    <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="xlnx_auto_0_xdb"/>
+    <file xil_pn:fileType="FILE_DIRECTORY" xil_pn:name="xst"/>
+  </files>
+
+  <transforms xmlns="http://www.xilinx.com/XMLSchema">
+    <transform xil_pn:end_ts="1318438131" xil_pn:name="TRAN_copyInitialToAbstractSimulation" xil_pn:start_ts="1318438131">
+      <status xil_pn:value="SuccessfullyRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1318438131" xil_pn:in_ck="-1213330011130731019" xil_pn:name="TRAN_copyAbstractToPostAbstractSimulation" xil_pn:start_ts="1318438131">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <outfile xil_pn:name="../../ex04/source/prienc.v"/>
+      <outfile xil_pn:name="../../ex04/source/test_prienc.v"/>
+    </transform>
+    <transform xil_pn:end_ts="1318438131" xil_pn:name="TRAN_xawsToSimhdl" xil_pn:prop_ck="-2465978218528406921" xil_pn:start_ts="1318438131">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1318438131" xil_pn:name="TRAN_schematicsToHdlSim" xil_pn:prop_ck="-973016662392854475" xil_pn:start_ts="1318438131">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1318438131" xil_pn:name="TRAN_regenerateCoresSim" xil_pn:prop_ck="-5673495855588568327" xil_pn:start_ts="1318438131">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1318438131" xil_pn:in_ck="-1213330011130731019" xil_pn:name="TRAN_copyPostAbstractToPreSimulation" xil_pn:start_ts="1318438131">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <outfile xil_pn:name="../../ex04/source/prienc.v"/>
+      <outfile xil_pn:name="../../ex04/source/test_prienc.v"/>
+    </transform>
+    <transform xil_pn:end_ts="1318438132" xil_pn:in_ck="-1213330011130731019" xil_pn:name="TRAN_ISimulateBehavioralModelRunFuse" xil_pn:prop_ck="-6383151440466446739" xil_pn:start_ts="1318438131">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForOutputs"/>
+      <status xil_pn:value="OutputChanged"/>
+      <outfile xil_pn:name="fuse.log"/>
+      <outfile xil_pn:name="isim"/>
+      <outfile xil_pn:name="isim.log"/>
+      <outfile xil_pn:name="test_prienc_beh.prj"/>
+      <outfile xil_pn:name="test_prienc_isim_beh.exe"/>
+      <outfile xil_pn:name="xilinxsim.ini"/>
+    </transform>
+    <transform xil_pn:end_ts="1318438132" xil_pn:in_ck="-8772274572191081361" xil_pn:name="TRAN_ISimulateBehavioralModel" xil_pn:prop_ck="-6208491060598851056" xil_pn:start_ts="1318438132">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForOutputs"/>
+      <status xil_pn:value="OutputChanged"/>
+      <outfile xil_pn:name="isim.cmd"/>
+      <outfile xil_pn:name="isim.log"/>
+      <outfile xil_pn:name="test_prienc_isim_beh.wdb"/>
+    </transform>
+    <transform xil_pn:end_ts="1318436599" xil_pn:name="TRAN_copyInitialToXSTAbstractSynthesis" xil_pn:start_ts="1318436599">
+      <status xil_pn:value="SuccessfullyRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1318436829" xil_pn:name="TRAN_schematicsToHdl" xil_pn:prop_ck="4035352175404694198" xil_pn:start_ts="1318436829">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1318436829" xil_pn:name="TRAN_regenerateCores" xil_pn:prop_ck="-5673495855588568327" xil_pn:start_ts="1318436829">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1318436599" xil_pn:name="TRAN_SubProjectAbstractToPreProxy" xil_pn:start_ts="1318436599">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1318436829" xil_pn:name="TRAN_xawsTohdl" xil_pn:prop_ck="-4204934621479226312" xil_pn:start_ts="1318436829">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1318436599" xil_pn:name="TRAN_SubProjectPreToStructuralProxy" xil_pn:prop_ck="-3972139311098429560" xil_pn:start_ts="1318436599">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1318436829" xil_pn:name="TRAN_platgen" xil_pn:prop_ck="3329265456363845315" xil_pn:start_ts="1318436829">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1318437160" xil_pn:in_ck="5492142547148549035" xil_pn:name="TRANEXT_xstsynthesize_spartan6" xil_pn:prop_ck="3424680903413217256" xil_pn:start_ts="1318437155">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="WarningsGenerated"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForOutputs"/>
+      <status xil_pn:value="OutputChanged"/>
+      <outfile xil_pn:name="_xmsgs/xst.xmsgs"/>
+      <outfile xil_pn:name="prienc.lso"/>
+      <outfile xil_pn:name="prienc.ngc"/>
+      <outfile xil_pn:name="prienc.ngr"/>
+      <outfile xil_pn:name="prienc.prj"/>
+      <outfile xil_pn:name="prienc.stx"/>
+      <outfile xil_pn:name="prienc.syr"/>
+      <outfile xil_pn:name="prienc.xst"/>
+      <outfile xil_pn:name="prienc_xst.xrpt"/>
+      <outfile xil_pn:name="webtalk_pn.xml"/>
+      <outfile xil_pn:name="xst"/>
+    </transform>
+    <transform xil_pn:end_ts="1318437490" xil_pn:name="TRAN_compileBCD2" xil_pn:prop_ck="5069202361895915747" xil_pn:start_ts="1318437490">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+    </transform>
+    <transform xil_pn:end_ts="1318436780" xil_pn:in_ck="-2723079043287518362" xil_pn:name="TRANEXT_ngdbuild_FPGA" xil_pn:prop_ck="5308023070790326489" xil_pn:start_ts="1318436777">
+      <status xil_pn:value="FailedRun"/>
+      <status xil_pn:value="WarningsGenerated"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <status xil_pn:value="OutOfDateForInputs"/>
+      <status xil_pn:value="OutOfDateForProperties"/>
+      <status xil_pn:value="OutOfDateForOutputs"/>
+      <status xil_pn:value="InputAdded"/>
+      <status xil_pn:value="InputChanged"/>
+      <status xil_pn:value="InputRemoved"/>
+      <status xil_pn:value="OutputRemoved"/>
+    </transform>
+    <transform xil_pn:end_ts="1318437491" xil_pn:in_ck="5363026634351463" xil_pn:name="TRAN_postSynthesisSimModel" xil_pn:prop_ck="-4626216969797693355" xil_pn:start_ts="1318437490">
+      <status xil_pn:value="SuccessfullyRun"/>
+      <status xil_pn:value="ReadyToRun"/>
+      <outfile xil_pn:name="netgen"/>
+      <outfile xil_pn:name="netgen/synthesis/prienc_synthesis.nlf"/>
+      <outfile xil_pn:name="netgen/synthesis/prienc_synthesis.v"/>
+    </transform>
+  </transforms>
+
+</generated_project>

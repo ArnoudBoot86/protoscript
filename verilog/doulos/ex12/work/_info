@@ -1,0 +1,23 @@
+m255
+K3
+13
+cModel Technology
+Z0 dC:\training\verilog\ex12
+vReadHex
+!s100 ;iLzW@Zjh@e`j6;XFZ7mE3
+IQ@k9S<;j080AeI5HQ6^<@3
+VQ=E3L9alHaRjD2QDSGc>I1
+Z1 dC:\training\verilog\ex12
+w1318614616
+8C:/training/verilog/ex12/readhex.v
+FC:/training/verilog/ex12/readhex.v
+L0 7
+Z2 OE;L;10.0a;49
+r1
+!s85 0
+31
+!s108 1318614785.312000
+!s107 C:/training/verilog/ex12/readhex.v|
+!s90 -reportprogress|300|-work|work|C:/training/verilog/ex12/readhex.v|
+o-work work -L mtiAvm -L mtiOvm -L mtiUvm -L mtiUPF
+n@read@hex

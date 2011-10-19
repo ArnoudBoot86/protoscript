@@ -1,0 +1,1 @@
+-intstyle "ise" -incremental -lib "unisims_ver" -lib "unimacro_ver" -lib "xilinxcorelib_ver" -lib "secureip" -o "C:/training/verilog/ex06/ec06proj/MinMaxtf_isim_beh.exe" -prj "C:/training/verilog/ex06/ec06proj/MinMaxtf_beh.prj" "work.MinMaxtf" "work.glbl" 

@@ -1,0 +1,7 @@
+setMode -bscan
+setCable -p usb21
+addDevice -p 1 -part xccace
+addDevice -position 2 -file mux2.bit
+readIdcode -p 2
+program -p 2
+quit

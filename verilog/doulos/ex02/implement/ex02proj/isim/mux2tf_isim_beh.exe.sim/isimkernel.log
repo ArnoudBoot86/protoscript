@@ -1,0 +1,28 @@
+Command line:
+   mux2tf_isim_beh.exe
+     -simmode  gui
+     -simrunnum  1
+     -socket  2168
+
+Tue Oct 11 14:12:49 2011
+
+
+ Elaboration Time: 0.109375 sec
+
+ Current Memory Usage: 465.416 Meg
+
+ Total Signals          : 18
+ Total Nets             : 17
+ Total Signal Drivers   : 10
+ Total Blocks           : 3
+ Total Primitive Blocks : 2
+ Total Processes        : 13
+ Total Traceable Variables  : 21
+ Total Scalar Nets and Variables : 100
+
+ Total Simulation Time: 0.109375 sec
+
+ Current Memory Usage: 309.178 Meg
+
+Tue Oct 11 15:15:24 2011
+

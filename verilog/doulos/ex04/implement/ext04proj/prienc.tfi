@@ -1,0 +1,10 @@
+
+
+
+// Instantiate the module
+prienc instance_name (
+    .f(f), 
+    .a(a)
+    );
+
+

@@ -1,0 +1,2 @@
+verilog isim_temp "../../../ex03/source/decoder.v"
+verilog isim_temp "C:/Xilinx/13.1/ISE_DS/ISE//verilog/src/glbl.v"

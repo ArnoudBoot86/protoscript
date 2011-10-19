@@ -1,0 +1,11 @@
+# Slide switches
+NET in0 LOC = "C18" | IOSTANDARD = LVCMOS25;
+NET in1 LOC = "Y6"  | IOSTANDARD = LVCMOS25;
+NET in2 LOC = "W6"  | IOSTANDARD = LVCMOS25;
+NET in3 LOC = "E4"  | IOSTANDARD = LVCMOS15;   ##note this switch connected to 1V5
+
+# Discrete LEDs
+NET out0 LOC = "D17" | IOSTANDARD = LVCMOS25;  ## DS3
+NET out1 LOC = "AB4" | IOSTANDARD = LVCMOS25;  ## DS4
+NET out2 LOC = "D21" | IOSTANDARD = LVCMOS25;  ## DS5
+NET out3 LOC = "W15" | IOSTANDARD = LVCMOS25;  ## DS6

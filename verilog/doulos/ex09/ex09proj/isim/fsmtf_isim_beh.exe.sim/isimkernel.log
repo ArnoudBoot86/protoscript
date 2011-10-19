@@ -1,0 +1,10 @@
+Command line:
+   fsmtf_isim_beh.exe
+     -simmode  gui
+     -simrunnum  0
+     -socket  2415
+
+Thu Oct 13 10:40:36 2011
+
+
+ Elaboration Time: 0.09375 sec

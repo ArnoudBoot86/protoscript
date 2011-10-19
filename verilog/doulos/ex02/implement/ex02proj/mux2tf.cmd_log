@@ -1,0 +1,2 @@
+xst -intstyle ise -ifn "C:/training/verilog/ex02/implement/ex02proj/mux2tf.xst" -ofn "C:/training/verilog/ex02/implement/ex02proj/mux2tf.syr" 
+ngdbuild -intstyle ise -dd _ngo -nt timestamp -i -p xc6slx45t-fgg484-2 mux2tf.ngc mux2tf.ngd  

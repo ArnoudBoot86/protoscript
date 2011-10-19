@@ -1,0 +1,1 @@
+xst -intstyle ise -ifn "C:/training/verilog/ex07/ex07proj/updownCounter.xst" -ofn "C:/training/verilog/ex07/ex07proj/updownCounter.syr" 

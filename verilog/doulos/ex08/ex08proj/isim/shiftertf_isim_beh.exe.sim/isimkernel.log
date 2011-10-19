@@ -1,0 +1,28 @@
+Command line:
+   shiftertf_isim_beh.exe
+     -simmode  gui
+     -simrunnum  0
+     -socket  2350
+
+Wed Oct 12 16:47:37 2011
+
+
+ Elaboration Time: 0.09375 sec
+
+ Current Memory Usage: 465.42 Meg
+
+ Total Signals          : 20
+ Total Nets             : 21
+ Total Signal Drivers   : 13
+ Total Blocks           : 4
+ Total Primitive Blocks : 2
+ Total Processes        : 18
+ Total Traceable Variables  : 28
+ Total Scalar Nets and Variables : 153
+
+ Total Simulation Time: 0.109375 sec
+
+ Current Memory Usage: 309.182 Meg
+
+Wed Oct 12 16:55:20 2011
+

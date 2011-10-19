@@ -1,0 +1,1 @@
+xst -intstyle ise -ifn "C:/training/verilog/ex02/implement/ex02proj/mux2.xst" -ofn "C:/training/verilog/ex02/implement/ex02proj/mux2.syr" 

@@ -1,0 +1,2 @@
+xst -intstyle ise -ifn "C:/training/verilog/ex09/ex09proj/fsm.xst" -ofn "C:/training/verilog/ex09/ex09proj/fsm.syr" 
+xst -intstyle ise -ifn "C:/training/verilog/ex09/ex09proj/fsm.xst" -ofn "C:/training/verilog/ex09/ex09proj/fsm.syr" 

@@ -1,0 +1,1 @@
+-intstyle "ise" -incremental -lib "unisims_ver" -lib "unimacro_ver" -lib "xilinxcorelib_ver" -lib "secureip" -o "C:/training/verilog/ex02/implement/ex02proj/mux2tf_isim_beh.exe" -prj "C:/training/verilog/ex02/implement/ex02proj/mux2tf_beh.prj" "work.mux2tf" "work.glbl" 

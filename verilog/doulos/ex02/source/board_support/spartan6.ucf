@@ -1,0 +1,10 @@
+# GPIO Push buttons
+NET "sel" LOC = "F3" | IOSTANDARD = LVCMOS15; ## SW4
+
+
+# Slide switches
+NET "a" LOC = "C18" | IOSTANDARD = LVCMOS25;
+NET "b" LOC = "Y6"  | IOSTANDARD = LVCMOS25;
+
+# Discrete LEDs
+NET f LOC = "D17" | IOSTANDARD = LVCMOS25;  ## DS3
