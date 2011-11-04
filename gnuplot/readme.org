@@ -14,3 +14,4 @@ Scripts in the gnuplot directory
   - Data is in the format: Time <tab> Voltage
   - Usage: call 'rawpulsev.gp' 'data1.dat' ('data2.dat') ('data3.dat')
 * scopeplot -- Plot ascii dump data taken with tds2014c scope
+* ploteis -- Plot impedance data taken with the ec100 and the hp4192a
