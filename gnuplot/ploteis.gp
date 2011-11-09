@@ -18,15 +18,15 @@
 reset
 set terminal wxt
 # Set the relative (or absolute) path to your datafiles.  
-datapath = "../../2011-nov-4/"
+datapath = "../../2011-nov-8/"
 # Choose whether or not to add a flatband line to the plot:
 # fit_flatband = 'yes' -- Add the flatband line
 # fit_flatband = 'no' -- Just plot the data without adding any fitted lines
-fit_flatband = 'yes'
+fit_flatband = 'no'
 
-set logscale x
+# set logscale x
 set mxtics 10
-set format x '%0.1s %c'
+set format x '%0.0s %c'
 set format y '%1.2s %c'
 set title 'ploteis.gp'
 set xlabel 'Frequency (Hz)'
