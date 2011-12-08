@@ -5,6 +5,7 @@ import decimal as D
 
 #--------------------- Instrument-specific variables -------------------
 gpibchan = 24
+timeout = 1 # Seconds (set to at least 1)
 #-----------------------------------------------------------------------
 
 
@@ -14,6 +15,7 @@ def gethandle(gpibchan):
     try:
         dmm = visa.instrument('GPIB::' + str(gpibchan))
         print('HP34401A ready on gpib channel ' + str(gpibchan))
+        dmm.timeout = timeout
         return dmm
     except:
         print('HP34401A not found on gpib channel ' + str(gpibchan))
@@ -25,8 +27,14 @@ def sendbus(handle,string):
     return
 
 """ flusherr(handle)
-    Flush out the existing errors """
+    Flush out existing errors and the send/recieve queue """
 def flusherr(handle):
+    while True:
+        try:
+            dummy = handle.ask('\r')
+        except:
+            print 'hp34401a queues empty'
+            break
     err = handle.ask('system:error?')
     while err.split(',')[1] != '"No error"':
         err = handle.ask('system:error?')
@@ -53,10 +61,21 @@ def onevmeas(handle,vrange,resolution):
 """ getmeas(handle)
     Get the last measurement. """
 def getmeas(handle):
+    sendbus(handle,'samp:coun 1')
     sendbus(handle,'init') # Set the wait for trigger state
     sendbus(handle,'*TRG') # Trigger the DMM
     reading = handle.ask('fetch?')
     return reading
+    
+""" dumread(handle,readnum)
+    Reads the DMM a few times to remove previous data. """
+def dumread(handle,readnum):
+    for read in range(readnum):
+        value = getmeas(handle)
+    return
+    
+
+    
     
     
     
