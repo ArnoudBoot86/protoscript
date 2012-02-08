@@ -18,7 +18,7 @@
 reset
 set terminal wxt
 # Set the relative (or absolute) path to your datafiles.  
-datapath = "../../2011-nov-8/"
+datapath = "../../2011-nov-9/"
 # Choose whether or not to add a flatband line to the plot:
 # fit_flatband = 'yes' -- Add the flatband line
 # fit_flatband = 'no' -- Just plot the data without adding any fitted lines
