@@ -29,13 +29,15 @@ def sendbus(handle,string):
 """ flusherr(handle)
     Flush out existing errors and the send/recieve queue """
 def flusherr(handle):
+    # Clear out the receive queue
     while True:
         try:
             dummy = handle.ask('\r')
         except:
-            print 'hp34401a queues empty'
+            # Nothing to read -- the queue is empty
             break
     err = handle.ask('system:error?')
+    # Clear out the error queue
     while err.split(',')[1] != '"No error"':
         err = handle.ask('system:error?')
 

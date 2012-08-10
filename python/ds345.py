@@ -67,6 +67,7 @@ def dcvolt(handle, voltage):
     sendbus(handle,'freq 1')
     sendbus(handle,'ampl ' + '%0.3f'%(absvolt) + 'VP')
     sendbus(handle,'func 1') # Set square wave output
+    sendbus(handle,'tsrc 0') # Set single trigger
     sendbus(handle,'offs 0') # No offset
     sendbus(handle,'mena 1') # Enable modulation
     sendbus(handle,'mtyp 5') # Set burst modulation
