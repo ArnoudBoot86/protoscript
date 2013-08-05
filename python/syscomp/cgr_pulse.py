@@ -43,20 +43,18 @@ def process_command_line(argv):
     return (options, args)
 
 def main(argv=None):
+    # The highnum option is now options.highnum
     (options, args) = process_command_line(argv)
-    # application code here, like:
-    # run(settings, args)
-    print options.highnum
     filename = ('cgrpulse_' + str(options.highnum) + 'high.dat')
-    print filename
     outfile = open(filename,'w')
     for samplenum in range(256):
         if (samplenum < options.highnum):
             outfile.write('0\n')
         else:
             outfile.write('128\n')
+    print('Waveform written to ' + filename)
     outfile.close()
-        
+    
     
     return 0        # success
 
