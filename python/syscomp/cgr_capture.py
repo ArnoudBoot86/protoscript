@@ -9,6 +9,12 @@ import time     # For making pauses
 import os       # For basic file I/O
 import binascii
 
+
+# For the Gnuplot module
+from numpy import * # For gnuplot.py
+import Gnuplot, Gnuplot.funcutils # For gnuplot.py
+
+
 #--------------------- Begin configure --------------------
 
 triglev = 0.1 # Volts -- the trigger level
@@ -226,13 +232,11 @@ def getdata(handle):
         highbyte = hexdata[(samplenum*4):((samplenum*4)+2)]
         lowbyte = hexdata[((samplenum*4)+2):((samplenum*4)+4)] 
         sampleval = (int(highbyte,16) << 8 ) + int(lowbyte,16)
-        decdata.append(sampleval)
-
-    
+        decdata.append(sampleval)    
     print(decdata[0:]) 
     return decdata
 
-# caldata(declist)
+# caldata(offlist,declist)
 #
 # Convert the list of decimal data points to voltages.  Return the
 # list of voltages.
@@ -240,24 +244,66 @@ def getdata(handle):
 # The decimal data list contains samples from both channels.  Channel
 # A samples are at odd indexes, and channel B samples are at even
 # indexes.
-def caldata(decdata):
+def caldata(offlist,decdata):
     cha_voltdata = []
     if cha_gain == 0:
         # Channel A has 1x gain
         cha_adStepSize = 0.00592
+        cha_offcounts = offlist[0]
     elif cha_gain == 1:
         # Channel A has 10x gain
         cha_adStepSize = 0.0521
+        cha_offcounts = offlist[1]
     for sample in decdata[0::2]:
-        cha_voltdata.append((511 - sample)*cha_adStepSize)
+        # cha_voltdata.append((511 - (sample - cha_offcounts))*cha_adStepSize)
+        cha_voltdata.append((511 - (sample + 16))*cha_adStepSize)
     return cha_voltdata
 
 # getoffset(handle)
+# 
+# Returns the offsets set in eeprom.  The offsets are in signed counts.
+#
+# [Channel A high range offset, Channel A low range offset,
+#  Channel B high range offset, Channel B low range offset]
 def getoffset(handle):
     handle.open()
     sendcgr(handle,'S O')
-    offdata = handle.read(10)
+    retdata = handle.read(10)
     handle.close()
+    hexdata = binascii.hexlify(retdata)[2:]
+    print(hexdata)
+    cha_hioff = int(hexdata[0:2],16)
+    cha_looff = int(hexdata[2:4],16)
+    chb_hioff = int(hexdata[4:6],16)
+    chb_looff = int(hexdata[6:8],16)
+    # Unsigned decimal list
+    udeclist = [cha_hioff, cha_looff, chb_hioff, chb_looff]
+    declist = []
+    for unsigned in udeclist:
+        if (unsigned > 127):
+            signed = unsigned - 256
+        else:
+            signed = unsigned
+        declist.append(signed)
+    return declist
+
+# plotdata()
+#
+# Plot data from one channel.
+def plotdata(voltdata):
+    gplot = Gnuplot.Gnuplot(debug=0)
+    gplot('set terminal wxt')
+    gplot('set title "Data"')
+    gplot('set style data lines')
+    gplot('set key bottom left')
+    gplot.xlabel('Time (s)')
+    gplot.ylabel('Voltage (V)')
+    # gplot("set format y '%0.0s %c'")
+    gplot('set pointsize 1')
+    gdata = Gnuplot.PlotItems.Data(voltdata,title='Raw voltage')
+    gplot.plot(gdata)
+    raw_input('* Press return to exit...')
+
         
 
 
@@ -265,13 +311,15 @@ def getoffset(handle):
 
 def main(): 
     cgr = getcgr()
+    offlist = getoffset(cgr)
     gain_set(cgr)
     trig_level_set(cgr)
     trig_samples_set(cgr)
     ctrl_reg_set(cgr)
     tracedata = getdata(cgr) # List of uncalibrated decimal values
-    voltdata = caldata(tracedata) # List of voltages
+    voltdata = caldata(offlist,tracedata) # List of voltages
     print(voltdata[0:])
+    plotdata(voltdata)
 
 
 # Execute main() from command line
