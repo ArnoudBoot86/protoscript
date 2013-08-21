@@ -2,17 +2,21 @@
 #
 # Captures one buffer of data from the cgr-101 USB scope
 
-import serial   # Provides serial class Serial
-from serial.tools.list_ports import comports # For getting list of
-                                             # serial ports
+
 import time     # For making pauses
 import os       # For basic file I/O
-import binascii
+
+
+import cgrlib
 
 
 # For the Gnuplot module
 from numpy import * # For gnuplot.py
 import Gnuplot, Gnuplot.funcutils # For gnuplot.py
+
+# Use this option to turn off fifo if you get warnings like:
+# line 0: warning: Skipping unreadable file "/tmp/tmpakexra.gnuplot/fifo"
+Gnuplot.GnuplotOpts.prefer_fifo_data = 0
 
 
 #--------------------- Begin configure --------------------
@@ -30,47 +34,8 @@ chb_gain = 1 # 0: 1x gain ( +/-25V max ), 1: 10x gain ( +/-2.5V max )
 cmdterm = '\r\n' # Terminates each command
 
 
-# getcgr() 
-#
-# Returns an instrument variable for the cgr scope, or an error
-# message if the connection fails.
-def getcgr():
-    for serport in comports():
-        rawstr = ''
-        try:
-            cgr = serial.Serial()
-            cgr.baudrate = 230400
-            cgr.timeout = 0.1 # Set timeout to 100ms
-            cgr.port = serport[0]
-            cgr.open()
-            # If the port can be configured, it might be a CGR.  Check
-            # to make sure.
-            retnum = cgr.write("i\r\n") # Request the identity string
-            rawstr = cgr.read(20) # Read a small number of bytes
-            cgr.close()
-            if rawstr.count('Syscomp') == 1:
-                return cgr
-        except:
-            print('Could not open ' + serport[0])
 
 
-# sendcgr(handle,command)
-#    
-# Send an ascii command string to the CGR scope
-def sendcgr(handle,cmd):
-    handle.write(cmd + cmdterm)
-    time.sleep(0.1) # Don't know if there's a command buffer
-
-# askcgr(handle,command)
-#
-# Send an ascii command and return the reply
-def askcgr(handle,cmd):
-    sendcgr(handle,cmd)
-    try:
-        retstr = handle.readline()
-        return(retstr)
-    except:
-        return('No reply')
 
 # ctrl_reg_val()
 #
@@ -80,7 +45,7 @@ def askcgr(handle,cmd):
 # Returns the control register value.
 def ctrl_reg_value():
     reg_value = 0
-    reg_value += samplebits(fsamp) # Set sample rate
+    reg_value += cgrlib.get_samplebits(fsamp) # Set sample rate
     # Configure the trigger source
     if trigsrc == 0:
         # Trigger on channel A
@@ -105,28 +70,34 @@ def ctrl_reg_value():
 # Set the value for the control register.
 def ctrl_reg_set(handle):
     handle.open()
-    sendcgr(handle,('S R ' + str(ctrl_reg_value())))
+    cgrlib.sendcmd(handle,('S R ' + str(ctrl_reg_value())))
     print('Control register set to ' + str(ctrl_reg_value()))
     handle.close()
 
-# gain_set(handle)
+
+
+
+
+
+# set_hw_gain(handle)
 #
 # Set the gains for both channels.
-def gain_set(handle):
+def set_hw_gain(handle):
     handle.open()
     if cha_gain == 0:
         # Set channel A gain to 1x
-        sendcgr(handle,('S P A'))
+        cgrlib.sendcmd(handle,('S P A'))
     elif cha_gain == 1:
         # Set channel A gain to 10x
-        sendcgr(handle,('S P a'))
+        cgrlib.sendcmd(handle,('S P a'))
     if chb_gain == 0:
         # Set channel B gain to 1x
-        sendcgr(handle,('S P B'))
+        cgrlib.sendcmd(handle,('S P B'))
     elif chb_gain == 1:
         # Set channel B gain to 10x
-        sendcgr(handle,('S P b'))
+        cgrlib.sendcmd(handle,('S P b'))
     handle.close()
+
 
 # trig_level_set(handle)
 # 
@@ -150,7 +121,7 @@ def trig_level_set(handle):
         trigval = 511 # 0V
     trigval_l = int(trigval%(2**8))
     trigval_h = int((trigval%(2**16))/(2**8))
-    sendcgr(handle,('S T ' + str(trigval_h) + ' ' + str(trigval_l)))
+    cgrlib.sendcmd(handle,('S T ' + str(trigval_h) + ' ' + str(trigval_l)))
     handle.close()
 
 # trig_samples_set(handle)
@@ -168,73 +139,13 @@ def trig_samples_set(handle):
     else:
         setval_h = int((500%(2**16))/(2**8))
         setval_l = int((500%(2**8)))
-    sendcgr(handle,('S C ' + str(setval_h) + ' ' + str(setval_l)))
+    cgrlib.sendcmd(handle,('S C ' + str(setval_h) + ' ' + str(setval_l)))
     handle.close()
     
 
 
-# samplebits(sample rate)
-#
-# Given a sample rate in Hz, returns the closest possible hardware
-# sample rate setting.  This setting goes in bits 0:3 of the control
-# register.
-#
-# The sample rate is given by (20Ms/s)/2**N, where N is the 4-bit
-# value returned by this function.
-def samplebits(srate):
-    baserate = int(20e6) # Maximum sample rate
-    ratelist = []
-    for nval in range(2**4):
-        ratelist.append( int(baserate / ( 2**nval )))
-    closeval = min(ratelist, key=lambda x:abs(x - srate))
-    setval = ratelist.index(closeval)
-    return setval
-    
-# getstat(handle)
-#
-# Returns the state string from the unit.  The string may be:
-# Returned string     Corresponding state
-# ---------------------------------------
-# State 1             Idle
-# State 2             Initializing capture
-# State 3             Wait for trigger signal to reset
-# State 4             Armed, waiting for capture
-# State 5             Capturing
-# State 6             Done
-def getstat(handle):
-    handle.open()
-    retstr = askcgr(handle,'S S')
-    if (retstr == "No reply"):
-        print('getstat: no response')
-    handle.close() 
-    return retstr
 
-# getdata(handle)
-# 
-# Returns data from the unit
-def getdata(handle):
-    handle.open()
-    sendcgr(handle,'S G') # Start the capture
-    print('Waiting for capture to finish...')
-    retstr = ' '
-    # The unit will reply with 3 bytes when it's done capturing data.
-    # Wait on those three bytes.
-    while len(retstr) < 3:
-        retstr = handle.read(10)
-    sendcgr(handle,'S B') # Query the data
-    retdata = handle.read(5000)
-    print('Got data length ' + str(len(retdata)))
-    hexdata = binascii.hexlify(retdata)[2:]
-    print(hexdata[0:10])
-    handle.close()
-    decdata = []
-    for samplenum in range(1024):
-        highbyte = hexdata[(samplenum*4):((samplenum*4)+2)]
-        lowbyte = hexdata[((samplenum*4)+2):((samplenum*4)+4)] 
-        sampleval = (int(highbyte,16) << 8 ) + int(lowbyte,16)
-        decdata.append(sampleval)    
-    print(decdata[0:]) 
-    return decdata
+
 
 # caldata(offlist,declist)
 #
@@ -259,48 +170,23 @@ def caldata(offlist,decdata):
         cha_voltdata.append((511 - (sample + 16))*cha_adStepSize)
     return cha_voltdata
 
-# getoffset(handle)
-# 
-# Returns the offsets set in eeprom.  The offsets are in signed counts.
-#
-# [Channel A high range offset, Channel A low range offset,
-#  Channel B high range offset, Channel B low range offset]
-def getoffset(handle):
-    handle.open()
-    sendcgr(handle,'S O')
-    retdata = handle.read(10)
-    handle.close()
-    hexdata = binascii.hexlify(retdata)[2:]
-    print(hexdata)
-    cha_hioff = int(hexdata[0:2],16)
-    cha_looff = int(hexdata[2:4],16)
-    chb_hioff = int(hexdata[4:6],16)
-    chb_looff = int(hexdata[6:8],16)
-    # Unsigned decimal list
-    udeclist = [cha_hioff, cha_looff, chb_hioff, chb_looff]
-    declist = []
-    for unsigned in udeclist:
-        if (unsigned > 127):
-            signed = unsigned - 256
-        else:
-            signed = unsigned
-        declist.append(signed)
-    return declist
+
 
 # plotdata()
 #
 # Plot data from one channel.
 def plotdata(voltdata):
-    gplot = Gnuplot.Gnuplot(debug=0)
-    gplot('set terminal wxt')
+    gplot = Gnuplot.Gnuplot(debug=1)
+    gplot('set terminal x11')
     gplot('set title "Data"')
     gplot('set style data lines')
     gplot('set key bottom left')
     gplot.xlabel('Time (s)')
     gplot.ylabel('Voltage (V)')
-    # gplot("set format y '%0.0s %c'")
+    gplot("set format x '%0.0s %c'")
     gplot('set pointsize 1')
-    gdata = Gnuplot.PlotItems.Data(voltdata,title='Raw voltage')
+    timedata = cgrlib.get_timelist(fsamp)
+    gdata = Gnuplot.PlotItems.Data(timedata,voltdata,title='Raw voltage')
     gplot.plot(gdata)
     raw_input('* Press return to exit...')
 
@@ -310,13 +196,14 @@ def plotdata(voltdata):
 
 
 def main(): 
-    cgr = getcgr()
-    offlist = getoffset(cgr)
-    gain_set(cgr)
+    cgr = cgrlib.get_cgr()
+    offlist = cgrlib.get_offlist(cgr)
+    set_hw_gain(cgr)
     trig_level_set(cgr)
     trig_samples_set(cgr)
     ctrl_reg_set(cgr)
-    tracedata = getdata(cgr) # List of uncalibrated decimal values
+    tracedata = cgrlib.get_uncal_data(cgr) # List of uncalibrated
+                                           # integer values
     voltdata = caldata(offlist,tracedata) # List of voltages
     print(voltdata[0:])
     plotdata(voltdata)
