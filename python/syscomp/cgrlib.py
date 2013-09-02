@@ -197,3 +197,39 @@ def set_trig_samples(handle,postpoints):
     sendcmd(handle,('S C ' + str(setval_h) + ' ' + str(setval_l)))
     handle.close()
     
+# set_ctrl_reg( handle, fsamp, trigsrc, trigpol )
+#
+# Sets the CGR-101's control register.
+#
+# Arguments:
+#  handle -- serial object representing the CGR-101
+#  fsamp -- requested sample rate in Hz.  The actual rate will be
+#           determined using those allowed for the unit.
+#  trigsrc -- Which connector the trigger comes in on.
+#             0: Channel A
+#             1: Channel B
+#             2: External trigger pin
+#  trigpol -- Which transition the trigger will watch for
+#             0: Rising edge
+#             1: Falling edge
+#
+# Returns the register value
+def set_ctrl_reg(handle,fsamp,trigsrc,trigpol):
+    reg_value = 0
+    reg_value += get_samplebits(fsamp) # Set sample rate
+    # Configure the trigger source
+    if trigsrc == 0: # Trigger on channel A
+        reg_value += (0 << 4)
+    elif trigsrc == 1: # Trigger on channel B
+        reg_value += (1 << 4)
+    elif trigsrc == 2: # Trigger on external input
+        reg_value += (1 << 6)
+    # Configure the trigger polarity
+    if trigpol == 0: # Rising edge
+        reg_value += (0 << 5)
+    elif trigpol == 1: # Falling edge
+        reg_value += (1 << 5)
+    handle.open()
+    sendcmd(handle,('S R ' + str(reg_value)))
+    handle.close()
+    return reg_value

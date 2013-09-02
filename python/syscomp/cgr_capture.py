@@ -41,45 +41,6 @@ cmdterm = '\r\n' # Terminates each command
 
 
 
-
-
-# ctrl_reg_val()
-#
-# Compute the control register value.  We have to keep track of the
-# control register value in between writes.
-#
-# Returns the control register value.
-def ctrl_reg_value():
-    reg_value = 0
-    reg_value += cgrlib.get_samplebits(fsamp) # Set sample rate
-    # Configure the trigger source
-    if trigsrc == 0:
-        # Trigger on channel A
-        reg_value += (0 << 4)
-    elif trigsrc == 1:
-        # Trigger on channel B
-        reg_value += (1 << 4)
-    elif trigsrc == 2:
-        # Trigger on external input
-        reg_value += (1 << 6)
-    # Configure the trigger polarity
-    if trigpol == 0:
-        # Rising edge
-        reg_value += (0 << 5)
-    elif trigpol == 1:
-        # Falling edge
-        reg_value += (1 << 5)
-    return reg_value
-
-# ctrl_reg_set(handle)
-#
-# Set the value for the control register.
-def ctrl_reg_set(handle):
-    handle.open()
-    cgrlib.sendcmd(handle,('S R ' + str(ctrl_reg_value())))
-    print('Control register set to ' + str(ctrl_reg_value()))
-    handle.close()
-
 # set_hw_gain(handle)
 #
 # Set the gains for both channels.
@@ -192,7 +153,8 @@ def main():
     set_hw_gain(cgr)
     trig_level_set(cgr)
     cgrlib.set_trig_samples(cgr,trigpts)
-    ctrl_reg_set(cgr)
+    # ctrl_reg_set(cgr)
+    ctrl_reg = cgrlib.set_ctrl_reg(cgr,fsamp,trigsrc,trigpol)
     tracedata = cgrlib.get_uncal_data(cgr) # List of uncalibrated
                                            # integer values
     print('* Channel A uncal data')

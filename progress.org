@@ -5,3 +5,5 @@
 * Work on CGR code
 ** TODO Fix gain setting
    - I really dont' think my tiny mp3 player is putting out 10V
+** DONE Get the control register setting into the library
+** TODO Get the hardware gain setting into the library
