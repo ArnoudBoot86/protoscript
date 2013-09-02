@@ -9,6 +9,12 @@ import os       # For basic file I/O
 
 import cgrlib
 
+#------------------- Configure logging -------------------
+import logging
+logging.basicConfig(filename='cgrlog.log',level=logging.DEBUG)
+logging.debug('This message should go to the log file')
+
+
 
 # For the Gnuplot module
 from numpy import * # For gnuplot.py
@@ -24,10 +30,10 @@ Gnuplot.GnuplotOpts.prefer_fifo_data = 0
 triglev = 0.1 # Volts -- the trigger level
 trigsrc = 0 # 0: Channel A, 1: Channel B, 2: External
 trigpol = 0 # 0: Rising,    1: Falling
-trigpts = 500 # The number of points to capture after trigger
-fsamp = 1e4 # Hz -- the sample rate
-cha_gain = 1 # 0: 1x gain ( +/-25V max ), 1: 10x gain ( +/-2.5V max )
-chb_gain = 1 # 0: 1x gain ( +/-25V max ), 1: 10x gain ( +/-2.5V max )
+trigpts = 1000 # The number of points to capture after trigger
+fsamp = 1e5 # Hz -- the sample rate
+cha_gain = 0 # 0: 1x gain ( +/-25V max ), 1: 10x gain ( +/-2.5V max )
+chb_gain = 0 # 0: 1x gain ( +/-25V max ), 1: 10x gain ( +/-2.5V max )
 
 #---------------------- End configure ---------------------
 
@@ -74,11 +80,6 @@ def ctrl_reg_set(handle):
     print('Control register set to ' + str(ctrl_reg_value()))
     handle.close()
 
-
-
-
-
-
 # set_hw_gain(handle)
 #
 # Set the gains for both channels.
@@ -97,7 +98,6 @@ def set_hw_gain(handle):
         # Set channel B gain to 10x
         cgrlib.sendcmd(handle,('S P b'))
     handle.close()
-
 
 # trig_level_set(handle)
 # 
@@ -124,28 +124,8 @@ def trig_level_set(handle):
     cgrlib.sendcmd(handle,('S T ' + str(trigval_h) + ' ' + str(trigval_l)))
     handle.close()
 
-# trig_samples_set(handle)
-#
-# Sets the number of samples to take after a trigger.  The unit always
-# takes 1024 samples.  Setting the post-trigger samples to a value
-# less than 1024 means that samples before the trigger will be saved
-# instead.
-def trig_samples_set(handle):
-    handle.open()
-    totsamp = 1024
-    if (trigpts <= totsamp):
-        setval_h = int((trigpts%(2**16))/(2**8))
-        setval_l = int((trigpts%(2**8)))
-    else:
-        setval_h = int((500%(2**16))/(2**8))
-        setval_l = int((500%(2**8)))
-    cgrlib.sendcmd(handle,('S C ' + str(setval_h) + ' ' + str(setval_l)))
-    handle.close()
+
     
-
-
-
-
 
 # caldata(offlist,declist)
 #
@@ -156,7 +136,6 @@ def trig_samples_set(handle):
 # A samples are at odd indexes, and channel B samples are at even
 # indexes.
 def caldata(offlist,decdata):
-    cha_voltdata = []
     if cha_gain == 0:
         # Channel A has 1x gain
         cha_adStepSize = 0.00592
@@ -165,12 +144,23 @@ def caldata(offlist,decdata):
         # Channel A has 10x gain
         cha_adStepSize = 0.0521
         cha_offcounts = offlist[1]
-    for sample in decdata[0::2]:
-        # cha_voltdata.append((511 - (sample - cha_offcounts))*cha_adStepSize)
+    if chb_gain == 0:
+        # Channel B has 1x gain
+        chb_adStepSize = 0.00592
+        chb_offcounts = offlist[0]
+    elif chb_gain == 1:
+        # Channel B has 10x gain
+        chb_adStepSize = 0.0521
+        chb_offcounts = offlist[1]
+    # Process channel A data
+    cha_voltdata = []
+    for sample in decdata[0]:
         cha_voltdata.append((511 - (sample + 16))*cha_adStepSize)
-    return cha_voltdata
-
-
+    # Process channel B data
+    chb_voltdata = []
+    for sample in decdata[1]:
+        chb_voltdata.append((511 - (sample + 16))*chb_adStepSize)
+    return [cha_voltdata,chb_voltdata]
 
 # plotdata()
 #
@@ -186,26 +176,34 @@ def plotdata(voltdata):
     gplot("set format x '%0.0s %c'")
     gplot('set pointsize 1')
     timedata = cgrlib.get_timelist(fsamp)
-    gdata = Gnuplot.PlotItems.Data(timedata,voltdata,title='Raw voltage')
-    gplot.plot(gdata)
+    gplot('set arrow from ' + str(timedata[1024-trigpts]) +
+          ',0 to ' +str(timedata[1024-trigpts]) +',1 nohead')
+    gdata_cha = Gnuplot.PlotItems.Data(
+        timedata,voltdata[0],title='Channel A')
+    gdata_chb = Gnuplot.PlotItems.Data(
+        timedata,voltdata[1],title='Channel B')
+    gplot.plot(gdata_cha,gdata_chb)
     raw_input('* Press return to exit...')
 
         
-
-
-
-
 def main(): 
     cgr = cgrlib.get_cgr()
     offlist = cgrlib.get_offlist(cgr)
     set_hw_gain(cgr)
     trig_level_set(cgr)
-    trig_samples_set(cgr)
+    cgrlib.set_trig_samples(cgr,trigpts)
     ctrl_reg_set(cgr)
     tracedata = cgrlib.get_uncal_data(cgr) # List of uncalibrated
                                            # integer values
+    print('* Channel A uncal data')
+    print(tracedata[0][0:100])
+    print('* Channel B uncal data')
+    print(tracedata[1][0:100])
     voltdata = caldata(offlist,tracedata) # List of voltages
-    print(voltdata[0:])
+    print('* Channel A data')
+    print(voltdata[0][0:100])
+    print('* Channel B data')
+    print(voltdata[1][0:100])
     plotdata(voltdata)
 
 

@@ -10,7 +10,9 @@ import binascii # For hex string conversion
 # comports() returns a list of comports available in the system
 from serial.tools.list_ports import comports 
 
-
+#------------------- Configure logging -------------------
+import logging
+logger = logging.getLogger(__name__)
 
 cmdterm = '\r\n' # Terminates each command
 
@@ -75,6 +77,7 @@ def get_samplebits(srate):
         ratelist.append( int(baserate / ( 2**nval )))
     closeval = min(ratelist, key=lambda x:abs(x - srate))
     setval = ratelist.index(closeval)
+    print('* Sample rate is ' + str(closeval))
     return setval
 
 # get_state(handle)
@@ -138,9 +141,12 @@ def get_offlist(handle):
     return declist
 
 # get_uncal_data(handle)
+#
+# Arguments: Serial object representing CGR-101
 # 
-# Returns uncalibrated integer data from the unit.  Right now it only
-# returns data from channel A.
+# Returns uncalibrated integer data from the unit.  Returns two lists
+# of data:
+# [ A channel data, B channel data]
 def get_uncal_data(handle):
     handle.open()
     sendcmd(handle,'S G') # Start the capture
@@ -156,15 +162,38 @@ def get_uncal_data(handle):
     hexdata = binascii.hexlify(retdata)[2:]
     print(hexdata[0:10])
     handle.close()
-    decdata = []
-    # Get data from channel A.  Data returned from the unit has
-    # alternating words of channel A and channel B data.  Each word is
-    # 16 bits (two hex characters)
+    bothdata = [] # Alternating data from both channels
+    adecdata = [] # A channel data
+    bdecdata = [] # B channel data 
+    # Data returned from the unit has alternating words of channel A
+    # and channel B data.  Each word is 16 bits (two hex characters)
     for samplenum in range(1024):
-        highbyte = hexdata[(samplenum*4):((samplenum*4)+2)]
-        lowbyte = hexdata[((samplenum*4)+2):((samplenum*4)+4)] 
-        sampleval = (int(highbyte,16) << 8 ) + int(lowbyte,16)
-        decdata.append(sampleval)    
-    print(decdata[0:]) 
-    return decdata
+        sampleval = int(hexdata[(samplenum*4):(samplenum*4 + 4)],16)
+        bothdata.append(sampleval)
+    adecdata = bothdata[0::2]
+    bdecdata = bothdata[1::2]
+    return [adecdata,bdecdata]
 
+
+
+# set_trig_samples(handle,postpoints)
+#
+# Sets the number of samples to take after a trigger.  The unit always
+# takes 1024 samples.  Setting the post-trigger samples to a value
+# less than 1024 means that samples before the trigger will be saved
+# instead.
+#
+# Arguments: Serial object representing CGR-101,
+#            Number of points to acquire after the trigger
+def set_trig_samples(handle,postpoints):
+    handle.open()
+    totsamp = 1024
+    if (postpoints <= totsamp):
+        setval_h = int((postpoints%(2**16))/(2**8))
+        setval_l = int((postpoints%(2**8)))
+    else:
+        setval_h = int((500%(2**16))/(2**8))
+        setval_l = int((500%(2**8)))
+    sendcmd(handle,('S C ' + str(setval_h) + ' ' + str(setval_l)))
+    handle.close()
+    

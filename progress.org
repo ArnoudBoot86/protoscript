@@ -1,0 +1,7 @@
+* protoscript progress
+* ----------------------- Dated notes ---------------------------
+** <2013-09-01 Sun> Created this project
+* ------------------------ TODO list ----------------------------
+* Work on CGR code
+** TODO Fix gain setting
+   - I really dont' think my tiny mp3 player is putting out 10V
