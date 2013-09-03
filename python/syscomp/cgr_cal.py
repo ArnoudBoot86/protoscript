@@ -1,6 +1,6 @@
-# cgr_capture.py
+# cgr_cal.py
 #
-# Captures one buffer of data from the cgr-101 USB scope
+# Automates slope and offset calibration
 
 
 import time     # For making pauses
@@ -110,14 +110,11 @@ def main():
     print('* Offset list')
     print(offlist)
     cgrlib.set_hw_gain(cgr,cha_gain,chb_gain)
-
-    cgrlib.set_trig_level(cgr,cha_gain,chb_gain,trigsrc,triglev)
-    cgrlib.set_trig_samples(cgr,trigpts)
-
     ctrl_reg = cgrlib.set_ctrl_reg(cgr,fsamp,trigsrc,trigpol)
-    tracedata = cgrlib.get_uncal_data(cgr) # List of uncalibrated
-                                           # integer values
-    print('* Channel A uncal data')
+    # Start the offset calibration
+    raw_input('* Remove all inputs and press return...')
+    cgrlib.force_trigger(cgr, ctrl_reg)
+    tracedata = cgrlib.get_uncal_forced_data(cgr,ctrl_reg)
     print(tracedata[0][0:100])
     print('* Channel B uncal data')
     print(tracedata[1][0:100])

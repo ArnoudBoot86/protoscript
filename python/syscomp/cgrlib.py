@@ -233,3 +233,117 @@ def set_ctrl_reg(handle,fsamp,trigsrc,trigpol):
     sendcmd(handle,('S R ' + str(reg_value)))
     handle.close()
     return reg_value
+
+# set_hw_gain( handle, cha_gain, chb_gain )
+#
+# Sets the CGR-101's hardware gain.  I don't think there's actually a
+# switched voltage divider at the inputs.  Rather, I think this switch
+# just applies an extra gain factor to measurements.  This is useful
+# to accomodate things like scope probes.
+#
+# Arguments:
+#  handle -- serial object representing the CGR-101
+#  cha_gain -- Set the gain for channel A
+#              0: Set 1x gain
+#              1: Set 10x gain (for use with a 10x probe)
+#  chb_gain -- Set the gain for channel B
+#              0: Set 1x gain
+#              1: Set 10x gain (for use with a 10x probe)
+#
+# No return value
+def set_hw_gain(handle,cha_gain,chb_gain):
+    handle.open()
+    if cha_gain == 0: # Set channel A gain to 1x
+        sendcmd(handle,('S P A'))
+    elif cha_gain == 1: # Set channel A gain to 10x
+        sendcmd(handle,('S P a'))
+    if chb_gain == 0: # Set channel B gain to 1x
+        sendcmd(handle,('S P B'))
+    elif chb_gain == 1: # Set channel B gain to 10x
+        sendcmd(handle,('S P b'))
+    handle.close()
+
+# set_trig_level( handle, cha_gain, chb_gain, trigsrc, triglev )
+#
+# Sets the trigger voltage.
+#
+# Arguments:
+#  handle -- serial object representing the CGR-101
+#  cha_gain -- Set the gain for channel A
+#              0: Set 1x gain
+#              1: Set 10x gain (for use with a 10x probe)
+#  chb_gain -- Set the gain for channel B
+#              0: Set 1x gain
+#              1: Set 10x gain (for use with a 10x probe)
+#  trigsrc -- Which connector the trigger comes in on.
+#             0: Channel A
+#             1: Channel B
+#             2: External trigger pin
+#  triglev -- The trigger level in volts
+def set_trig_level(handle, cha_gain, chb_gain, trigsrc, triglev):
+    trig_coeff = 0.052421484375 # Scale factor for trigger
+    handle.open()
+    if (cha_gain == 0 and trigsrc == 0): # Channel A gain is 1x
+        trigval = 511 - int(triglev / trig_coeff)
+    elif (cha_gain == 1 and trigsrc == 0): # Channel A gain is 10x
+        trigval = 511 - 10 * int(triglev / trig_coeff)
+    elif (chb_gain == 0 and trigsrc == 1): # Channel B gain is 1x
+        trigval = 511 - int(triglev / trig_coeff)
+    elif (chb_gain == 1 and trigsrc == 1): # Channel B gain is 10x
+        trigval = 511 - 10 * int(triglev / trig_coeff)
+    else:
+        trigval = 511 # 0V
+    trigval_l = int(trigval%(2**8))
+    trigval_h = int((trigval%(2**16))/(2**8))
+    sendcmd(handle,('S T ' + str(trigval_h) + ' ' + str(trigval_l)))
+    handle.close()
+
+# force_trigger( handle, ctrl_reg )
+#
+# Force a trigger.  Set bit 6 of the control register to configure
+# triggering via the external input, then send a debug code to force
+# the trigger.
+#
+# Arguments:
+#  handle -- serial object representing the CGR-101
+#  ctrl_reg -- value of the control register
+def force_trigger(handle, ctrl_reg):
+    old_reg = ctrl_reg
+    new_reg = ctrl_reg | (1 << 6)
+    handle.open()
+    sendcmd(handle,'S G') # Start the capture
+    sendcmd(handle,('S R ' + str(new_reg))) # Ready for forced trigger
+    print('* Control register is now ' + str(new_reg))
+    sendcmd(handle,('S D 5' )) # Force the trigger
+    sendcmd(handle,('S D 4' )) # Return to normal triggering
+    # Put the control register back the way it was
+    sendcmd(handle,('S R ' + str(old_reg)))
+    handle.close()
+    
+# get_uncal_forced_data(handle, ctrl_reg)
+#
+# Arguments: Serial object representing CGR-101
+# 
+# Returns uncalibrated integer data from the unit.  Returns two lists
+# of data:
+# [ A channel data, B channel data]
+def get_uncal_forced_data(handle,ctrl_reg):
+    # force_trigger(handle, ctrl_reg)
+    handle.open()
+    sendcmd(handle,'S B') # Query the data
+    retdata = handle.read(5000)
+    print('Got data length ' + str(len(retdata)))
+    hexdata = binascii.hexlify(retdata)[2:]
+    print(hexdata[0:10])
+    handle.close()
+    bothdata = [] # Alternating data from both channels
+    adecdata = [] # A channel data
+    bdecdata = [] # B channel data 
+    # Data returned from the unit has alternating words of channel A
+    # and channel B data.  Each word is 16 bits (two hex characters)
+    for samplenum in range(1024):
+        sampleval = int(hexdata[(samplenum*4):(samplenum*4 + 4)],16)
+        bothdata.append(sampleval)
+    adecdata = bothdata[0::2]
+    bdecdata = bothdata[1::2]
+    return [adecdata,bdecdata]
