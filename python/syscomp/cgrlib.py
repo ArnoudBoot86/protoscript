@@ -5,24 +5,58 @@
 import serial   # Provides serial class Serial
 import time     # For making pauses
 import binascii # For hex string conversion
+import pickle # For writing and reading calibration data
+import testlib # For colored status messages
+import sys # For sys.exit()
 
 
 # comports() returns a list of comports available in the system
 from serial.tools.list_ports import comports 
 
-#------------------- Configure logging -------------------
-import logging
-logger = logging.getLogger(__name__)
 
 cmdterm = '\r\n' # Terminates each command
 
+
+# write_cal(calfile,offlist)
+#
+# Writes the unit's calibration constants.  The constants are
+# currently just offsets, ordered as:
+# [ Channel A offset with 1x gain, Channel A offset with 10x gain,
+#   Channel B offset with 1x gain, Channel B offset with 10x gain ]
+def write_cal(calfile,caldict):
+    fout = open(calfile,'w')
+    pickle.dump(caldict,fout)
+    fout.close()
+
+# load_cal(calfile)
+#
+# Loads and returns the calibration constants.  Loads some defaults
+# into the calibration dictionary if a calibration file isn't found.
+def load_cal(calfile):
+    try:
+        fin = open(calfile,'rb')
+        caldict = pickle.load(fin)
+        fin.close()
+    except:
+        caldict = {}
+        testlib.infomessage('Failed to open calibration file...using defaults')
+        caldict['chA_1x_offset'] = 0
+        caldict['chA_1x_gain'] = 0.0445
+        caldict['chA_10x_offset'] = 0
+        caldict['chA_10x_gain'] = 0.445
+        caldict['chB_1x_offset'] = 0
+        caldict['chB_1x_gain'] = 0.0445
+        caldict['chB_10x_offset'] = 0
+        caldict['chB_10x_gain'] = 0.445
+    return caldict
 
 # get_cgr() 
 #
 # Returns an instrument variable for the cgr scope, or an error
 # message if the connection fails.
 def get_cgr():
-    for serport in comports():
+    portlist = comports()
+    for serport in portlist:
         rawstr = ''
         try:
             cgr = serial.Serial()
@@ -36,40 +70,31 @@ def get_cgr():
             rawstr = cgr.read(20) # Read a small number of bytes
             cgr.close()
             if rawstr.count('Syscomp') == 1:
+                testlib.passmessage('Connecting to CGR-101 at ' +
+                                    str(serport[0]))
                 return cgr
-        except:
-            print('Could not open ' + serport[0])
+            else:
+                testlib.infomessage('Could not open ' + serport[0])
+                if serport == portlist[-1]: # This is the last port
+                    testlib.failmessage('Did not find any CGR-101 units')
+                    sys.exit()
+        except serial.serialutil.SerialException:
+            testlib.infomessage('Could not open ' + serport[0])
+            if serport == portlist[-1]: # This is the last port
+                testlib.failmessage('Except Did not find any CGR-101 units')
+                sys.exit()
 
 
-# sendcgr(handle,command)
+# sendcmd(handle,command)
 #    
 # Send an ascii command string to the CGR scope
 def sendcmd(handle,cmd):
     handle.write(cmd + cmdterm)
     time.sleep(0.1) # Don't know if there's a command buffer
 
-
 # askcgr(handle,command)
 #
 # Send an ascii command and return the reply
-def askcgr(handle,cmd):
-    sendcmd(handle,cmd)
-    try:
-        retstr = handle.readline()
-        return(retstr)
-    except:
-        return('No reply')
-
-
-
-# get_samplebits(sample rate)
-#
-# Given a sample rate in Hz, returns the closest possible hardware
-# sample rate setting.  This setting goes in bits 0:3 of the control
-# register.
-#
-# The sample rate is given by (20Ms/s)/2**N, where N is the 4-bit
-# value returned by this function.
 def get_samplebits(srate):
     baserate = int(20e6) # Maximum sample rate
     ratelist = []
@@ -91,6 +116,22 @@ def get_samplebits(srate):
 # State 4             Armed, waiting for capture
 # State 5             Capturing
 # State 6             Done
+def askcgr(handle,cmd):
+    sendcmd(handle,cmd)
+    try:
+        retstr = handle.readline()
+        return(retstr)
+    except:
+        return('No reply')
+
+# get_samplebits(sample rate)
+#
+# Given a sample rate in Hz, returns the closest possible hardware
+# sample rate setting.  This setting goes in bits 0:3 of the control
+# register.
+#
+# The sample rate is given by (20Ms/s)/2**N, where N is the 4-bit
+# value returned by this function.
 def get_state(handle):
     handle.open()
     retstr = askcgr(handle,'S S')
@@ -112,13 +153,13 @@ def get_timelist(fsamp):
     return timelist
 
 
-# get_offlist(handle)
+# get_eeprom_offlist(handle)
 # 
 # Returns the offsets set in eeprom.  The offsets are in signed counts.
 #
 # [Channel A high range offset, Channel A low range offset,
 #  Channel B high range offset, Channel B low range offset]
-def get_offlist(handle):
+def get_eeprom_offlist(handle):
     handle.open()
     sendcmd(handle,'S O')
     retdata = handle.read(10)
@@ -140,51 +181,13 @@ def get_offlist(handle):
         declist.append(signed)
     return declist
 
-# get_uncal_data(handle)
+# get_uncal_triggered_data(handle)
 #
 # Arguments: Serial object representing CGR-101
 # 
-# Returns uncalibrated integer data from the unit.  Returns two lists
-# of data:
+# Returns uncalibrated integer data from the unit after a normal
+# trigger.  Returns two lists of data: 
 # [ A channel data, B channel data]
-def get_uncal_data(handle):
-    handle.open()
-    sendcmd(handle,'S G') # Start the capture
-    print('Waiting for capture to finish...')
-    retstr = ' '
-    # The unit will reply with 3 bytes when it's done capturing data.
-    # Wait on those three bytes.
-    while len(retstr) < 3:
-        retstr = handle.read(10)
-    sendcmd(handle,'S B') # Query the data
-    retdata = handle.read(5000)
-    print('Got data length ' + str(len(retdata)))
-    hexdata = binascii.hexlify(retdata)[2:]
-    print(hexdata[0:10])
-    handle.close()
-    bothdata = [] # Alternating data from both channels
-    adecdata = [] # A channel data
-    bdecdata = [] # B channel data 
-    # Data returned from the unit has alternating words of channel A
-    # and channel B data.  Each word is 16 bits (two hex characters)
-    for samplenum in range(1024):
-        sampleval = int(hexdata[(samplenum*4):(samplenum*4 + 4)],16)
-        bothdata.append(sampleval)
-    adecdata = bothdata[0::2]
-    bdecdata = bothdata[1::2]
-    return [adecdata,bdecdata]
-
-
-
-# set_trig_samples(handle,postpoints)
-#
-# Sets the number of samples to take after a trigger.  The unit always
-# takes 1024 samples.  Setting the post-trigger samples to a value
-# less than 1024 means that samples before the trigger will be saved
-# instead.
-#
-# Arguments: Serial object representing CGR-101,
-#            Number of points to acquire after the trigger
 def set_trig_samples(handle,postpoints):
     handle.open()
     totsamp = 1024
@@ -234,7 +237,7 @@ def set_ctrl_reg(handle,fsamp,trigsrc,trigpol):
     handle.close()
     return reg_value
 
-# set_hw_gain( handle, cha_gain, chb_gain )
+# set_hw_gain( handle, gainlist)
 #
 # Sets the CGR-101's hardware gain.  I don't think there's actually a
 # switched voltage divider at the inputs.  Rather, I think this switch
@@ -243,6 +246,9 @@ def set_ctrl_reg(handle,fsamp,trigsrc,trigpol):
 #
 # Arguments:
 #  handle -- serial object representing the CGR-101
+#  gainlist -- [cha_gain, chb_gain]
+#
+#  ...where the gain values are:
 #  cha_gain -- Set the gain for channel A
 #              0: Set 1x gain
 #              1: Set 10x gain (for use with a 10x probe)
@@ -250,18 +256,19 @@ def set_ctrl_reg(handle,fsamp,trigsrc,trigpol):
 #              0: Set 1x gain
 #              1: Set 10x gain (for use with a 10x probe)
 #
-# No return value
-def set_hw_gain(handle,cha_gain,chb_gain):
+# Returns the gainlist: [cha_gain, chb_gain]
+def set_hw_gain(handle,gainlist):
     handle.open()
-    if cha_gain == 0: # Set channel A gain to 1x
+    if gainlist[0] == 0: # Set channel A gain to 1x
         sendcmd(handle,('S P A'))
-    elif cha_gain == 1: # Set channel A gain to 10x
+    elif gainlist[0] == 1: # Set channel A gain to 10x
         sendcmd(handle,('S P a'))
-    if chb_gain == 0: # Set channel B gain to 1x
+    if gainlist[1] == 0: # Set channel B gain to 1x
         sendcmd(handle,('S P B'))
-    elif chb_gain == 1: # Set channel B gain to 10x
+    elif gainlist[1] == 1: # Set channel B gain to 10x
         sendcmd(handle,('S P b'))
     handle.close()
+    return gainlist
 
 # set_trig_level( handle, cha_gain, chb_gain, trigsrc, triglev )
 #
@@ -307,6 +314,42 @@ def set_trig_level(handle, cha_gain, chb_gain, trigsrc, triglev):
 # Arguments:
 #  handle -- serial object representing the CGR-101
 #  ctrl_reg -- value of the control register
+def get_uncal_triggered_data(handle):
+    handle.open()
+    sendcmd(handle,'S G') # Start the capture
+    print('Waiting for capture to finish...')
+    retstr = ' '
+    # The unit will reply with 3 bytes when it's done capturing data.
+    # Wait on those three bytes.
+    while len(retstr) < 3:
+        retstr = handle.read(10)
+    sendcmd(handle,'S B') # Query the data
+    retdata = handle.read(5000)
+    print('Got data length ' + str(len(retdata)))
+    hexdata = binascii.hexlify(retdata)[2:]
+    print(hexdata[0:10])
+    handle.close()
+    bothdata = [] # Alternating data from both channels
+    adecdata = [] # A channel data
+    bdecdata = [] # B channel data 
+    # Data returned from the unit has alternating words of channel A
+    # and channel B data.  Each word is 16 bits (two hex characters)
+    for samplenum in range(1024):
+        sampleval = int(hexdata[(samplenum*4):(samplenum*4 + 4)],16)
+        bothdata.append(sampleval)
+    adecdata = bothdata[0::2]
+    bdecdata = bothdata[1::2]
+    return [adecdata,bdecdata]
+
+# set_trig_samples(handle,postpoints)
+#
+# Sets the number of samples to take after a trigger.  The unit always
+# takes 1024 samples.  Setting the post-trigger samples to a value
+# less than 1024 means that samples before the trigger will be saved
+# instead.
+#
+# Arguments: Serial object representing CGR-101,
+#            Number of points to acquire after the trigger
 def force_trigger(handle, ctrl_reg):
     old_reg = ctrl_reg
     new_reg = ctrl_reg | (1 << 6)
@@ -322,13 +365,15 @@ def force_trigger(handle, ctrl_reg):
     
 # get_uncal_forced_data(handle, ctrl_reg)
 #
-# Arguments: Serial object representing CGR-101
-# 
+# Arguments:
+#  handle -- serial object representing the CGR-101
+#  ctrl_reg -- value of the control register
+#            
 # Returns uncalibrated integer data from the unit.  Returns two lists
 # of data:
 # [ A channel data, B channel data]
 def get_uncal_forced_data(handle,ctrl_reg):
-    # force_trigger(handle, ctrl_reg)
+    force_trigger(handle, ctrl_reg)
     handle.open()
     sendcmd(handle,'S B') # Query the data
     retdata = handle.read(5000)

@@ -8,5 +8,6 @@
 ** DONE Get the control register setting into the library
 ** DONE Get the hardware gain setting into the library
 ** DONE Get the trigger level setting into the library
-** TODO Use cgr_cal to determine what offsets should be
+** DONE Use cgr_cal to determine what offsets should be
    - Run through a calibration sequence for each gain stage
+** DONE In cgrcal, get_offsets should set values in the dictionary
