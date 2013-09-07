@@ -11,3 +11,10 @@
 ** DONE Use cgr_cal to determine what offsets should be
    - Run through a calibration sequence for each gain stage
 ** DONE In cgrcal, get_offsets should set values in the dictionary
+** DONE Change name of make_cal_data to get_cal_data
+** DONE Move get_cal_data into the library
+** TODO Fix trigger function to use the caldict calibration
+   - The set_trig_level function is just calibration in reverse.  Need
+     to use the calibration coefficients to arrive at a number in
+     counts from a floating-point voltage.  Also, make set_trig_level
+     use gainlist instead of independent gains.

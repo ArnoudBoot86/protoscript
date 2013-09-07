@@ -2,14 +2,8 @@
 #
 # Automates slope and offset calibration
 
-
-import time     # For making pauses
-import os       # For basic file I/O
-import pickle   # For saving calibration data
-
 import testlib # For colored status messages
 import cgrlib
-
 
 # For the Gnuplot module
 from numpy import * # For gnuplot.py
@@ -22,59 +16,19 @@ Gnuplot.GnuplotOpts.prefer_fifo_data = 0
 
 #--------------------- Begin configure --------------------
 
-triglev = 0.1 # Volts -- the trigger level
-trigsrc = 0 # 0: Channel A, 1: Channel B, 2: External
-trigpol = 0 # 0: Rising,    1: Falling
-trigpts = 1000 # The number of points to capture after trigger
-fsamp = 1e5 # Hz -- the sample rate
+fsamp = 1e5 # Hz -- the sample rate.  For calibration, this just
+            # affects how long the DC voltage is sampled.
+
+# Choose the gains to calibrate with.  Calibration coefficients for
+# other gains will be left alone.  10x gains are for use with 10x
+# scope probes.
 cha_gain = 0 # 0: 1x gain ( +/-25V max ), 1: 10x gain ( +/-2.5V max )
 chb_gain = 0 # 0: 1x gain ( +/-25V max ), 1: 10x gain ( +/-2.5V max )
-calfile = 'cgrcal.pkl'
-calvolt = 3.3 # Volts -- the voltage used for calibrating gain
+
+calvolt = 3.3 # Volts -- the voltage used for calibrating gain.
+
 #---------------------- End configure ---------------------
 
-cmdterm = '\r\n' # Terminates each command
-
-
-
-
-
-    
-
-# make_cal_data(caldict,offlist,declist)
-#
-# Convert the list of decimal data points to voltages.  Return the
-# list of voltages.
-#
-# The decimal data list contains samples from both channels.  Channel
-# A samples are at odd indexes, and channel B samples are at even
-# indexes.
-def make_cal_data(caldict,gainlist,decdata):
-    if gainlist[0] == 0:
-        # Channel A has 1x gain
-        chA_slope = caldict['chA_1x_slope']
-        chA_offset = caldict['chA_1x_offset']
-    elif gainlist[0] == 1:
-        # Channel A has 10x gain
-        chA_slope = caldict['chA_10x_slope']
-        chA_offset = caldict['chA_10x_offset']
-    if gainlist[1] == 0:
-        # Channel B has 1x gain
-        chB_slope = caldict['chB_1x_slope']
-        chB_offset = caldict['chB_1x_offset']
-    elif gainlist[1] == 1:
-        # Channel B has 10x gain
-        chB_slope = caldict['chB_10x_slope']
-        chB_offset = caldict['chB_10x_offset']
-    # Process channel A data
-    cha_voltdata = []
-    for sample in decdata[0]:
-        cha_voltdata.append((511 - (sample + chA_offset))*chA_slope)
-    # Process channel B data
-    chb_voltdata = []
-    for sample in decdata[1]:
-        chb_voltdata.append((511 - (sample + chB_offset))*chB_slope)
-    return [cha_voltdata,chb_voltdata]
 
 # get_offcal_data(caldict,gainlist,rawdata)
 #
@@ -172,9 +126,10 @@ def get_slopes(handle, ctrl_reg, gainlist, caldict, calvolt):
 
 # plotdata()
 #
-# Plot data from one channel.
+# Plot data from both channels to show calibration accuracy.
 def plotdata(voltdata):
-    gplot = Gnuplot.Gnuplot(debug=1)
+    # Set debug=1 to print gnuplot commands to stdout
+    gplot = Gnuplot.Gnuplot(debug=0)
     gplot('set terminal x11')
     gplot('set title "Data"')
     gplot('set style data lines')
@@ -193,44 +148,28 @@ def plotdata(voltdata):
 
 
 def main(): 
-    caldict = {}
+    caldict = cgrlib.load_cal()
     cgr = cgrlib.get_cgr()
-    offlist = cgrlib.load_cal(calfile)
-    print('* Offset list')
-    print(offlist)
+    ctrl_reg = cgrlib.set_ctrl_reg(cgr,fsamp,0,0)
     gainlist = cgrlib.set_hw_gain(cgr,[cha_gain,chb_gain])
-    ctrl_reg = cgrlib.set_ctrl_reg(cgr,fsamp,trigsrc,trigpol)
+    
     # Start the offset calibration
     raw_input('* Remove all inputs and press return...')
-    # Set 1x gain
-    gainlist = cgrlib.set_hw_gain(cgr,[0,0])
-    caldict = get_offsets(cgr, ctrl_reg, gainlist, caldict)
-    # Set 10x gain
-    gainlist = cgrlib.set_hw_gain(cgr,[1,1])
     caldict = get_offsets(cgr, ctrl_reg, gainlist, caldict)
 
-    
     # Start the slope calibration
-    gainlist = cgrlib.set_hw_gain(cgr,[0,0]) # Set 1x gain for both
-    raw_input('* Connect calibration voltage and press return...')
+    raw_input('* Connect ' + '{:0.3f}'.format(calvolt) +
+              'V calibration voltage and press return...')
     caldict = get_slopes(cgr, ctrl_reg, gainlist, caldict, calvolt)
 
-    # Set 1x gain to test calibration
-    gainlist = cgrlib.set_hw_gain(cgr,[0,0])
+    # Test calibration
     raw_input('* Ready to test calibration...')
     tracedata = cgrlib.get_uncal_forced_data(cgr,ctrl_reg)
-    print('* Channel A uncal data')
-    print(tracedata[0][0:100])
-    print('* Channel B uncal data')
-    print(tracedata[1][0:100])
-    voltdata = make_cal_data(caldict,gainlist,tracedata) # List of voltages
-    print('* Channel A data')
-    print(voltdata[0][0:100])
-    print('* Channel B data')
-    print(voltdata[1][0:100])
+    # Get calibrated volts
+    voltdata = cgrlib.get_cal_data(caldict,gainlist,tracedata)
     plotdata(voltdata)
     # Write the calibration data
-    cgrlib.write_cal(calfile,caldict)
+    cgrlib.write_cal(caldict)
 
 
 # Execute main() from command line

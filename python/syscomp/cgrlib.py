@@ -9,6 +9,9 @@ import pickle # For writing and reading calibration data
 import testlib # For colored status messages
 import sys # For sys.exit()
 
+# File used to hold the calibration constant dictionary
+calfile = 'cgrcal.pkl'
+
 
 # comports() returns a list of comports available in the system
 from serial.tools.list_ports import comports 
@@ -17,22 +20,22 @@ from serial.tools.list_ports import comports
 cmdterm = '\r\n' # Terminates each command
 
 
-# write_cal(calfile,offlist)
+# write_cal(offlist)
 #
 # Writes the unit's calibration constants.  The constants are
 # currently just offsets, ordered as:
 # [ Channel A offset with 1x gain, Channel A offset with 10x gain,
 #   Channel B offset with 1x gain, Channel B offset with 10x gain ]
-def write_cal(calfile,caldict):
+def write_cal(caldict):
     fout = open(calfile,'w')
     pickle.dump(caldict,fout)
     fout.close()
 
-# load_cal(calfile)
+# load_cal()
 #
 # Loads and returns the calibration constants.  Loads some defaults
 # into the calibration dictionary if a calibration file isn't found.
-def load_cal(calfile):
+def load_cal():
     try:
         fin = open(calfile,'rb')
         caldict = pickle.load(fin)
@@ -92,9 +95,16 @@ def sendcmd(handle,cmd):
     handle.write(cmd + cmdterm)
     time.sleep(0.1) # Don't know if there's a command buffer
 
-# askcgr(handle,command)
+
+
+# get_samplebits(sample rate)
 #
-# Send an ascii command and return the reply
+# Given a sample rate in Hz, returns the closest possible hardware
+# sample rate setting.  This setting goes in bits 0:3 of the control
+# register.
+#
+# The sample rate is given by (20Ms/s)/2**N, where N is the 4-bit
+# value returned by this function.
 def get_samplebits(srate):
     baserate = int(20e6) # Maximum sample rate
     ratelist = []
@@ -102,8 +112,22 @@ def get_samplebits(srate):
         ratelist.append( int(baserate / ( 2**nval )))
     closeval = min(ratelist, key=lambda x:abs(x - srate))
     setval = ratelist.index(closeval)
-    print('* Sample rate is ' + str(closeval))
+    testlib.infomessage('Requested sample rate is ' + 
+                        '{:0.0f}'.format(srate/1000) +
+                        'kHz.  Actual rate is ' + 
+                        '{:0.0f}'.format(closeval/1000) + 'kHz.')
     return setval
+
+# askcgr(handle, command)
+#
+# Send a command to the unit and check for a response.
+def askcgr(handle,cmd):
+    sendcmd(handle,cmd)
+    try:
+        retstr = handle.readline()
+        return(retstr)
+    except:
+        return('No reply')
 
 # get_state(handle)
 #
@@ -116,22 +140,6 @@ def get_samplebits(srate):
 # State 4             Armed, waiting for capture
 # State 5             Capturing
 # State 6             Done
-def askcgr(handle,cmd):
-    sendcmd(handle,cmd)
-    try:
-        retstr = handle.readline()
-        return(retstr)
-    except:
-        return('No reply')
-
-# get_samplebits(sample rate)
-#
-# Given a sample rate in Hz, returns the closest possible hardware
-# sample rate setting.  This setting goes in bits 0:3 of the control
-# register.
-#
-# The sample rate is given by (20Ms/s)/2**N, where N is the 4-bit
-# value returned by this function.
 def get_state(handle):
     handle.open()
     retstr = askcgr(handle,'S S')
@@ -181,13 +189,17 @@ def get_eeprom_offlist(handle):
         declist.append(signed)
     return declist
 
-# get_uncal_triggered_data(handle)
+
+
+# set_trig_samples(handle,postpoints)
 #
-# Arguments: Serial object representing CGR-101
-# 
-# Returns uncalibrated integer data from the unit after a normal
-# trigger.  Returns two lists of data: 
-# [ A channel data, B channel data]
+# Sets the number of samples to take after a trigger.  The unit always
+# takes 1024 samples.  Setting the post-trigger samples to a value
+# less than 1024 means that samples before the trigger will be saved
+# instead.
+#
+# Arguments: Serial object representing CGR-101,
+#            Number of points to acquire after the trigger
 def set_trig_samples(handle,postpoints):
     handle.open()
     totsamp = 1024
@@ -305,15 +317,15 @@ def set_trig_level(handle, cha_gain, chb_gain, trigsrc, triglev):
     sendcmd(handle,('S T ' + str(trigval_h) + ' ' + str(trigval_l)))
     handle.close()
 
-# force_trigger( handle, ctrl_reg )
+
+
+# get_uncal_triggered_data(handle)
 #
-# Force a trigger.  Set bit 6 of the control register to configure
-# triggering via the external input, then send a debug code to force
-# the trigger.
-#
-# Arguments:
-#  handle -- serial object representing the CGR-101
-#  ctrl_reg -- value of the control register
+# Arguments: Serial object representing CGR-101
+# 
+# Returns uncalibrated integer data from the unit after a normal
+# trigger.  Returns two lists of data: 
+# [ A channel data, B channel data]
 def get_uncal_triggered_data(handle):
     handle.open()
     sendcmd(handle,'S G') # Start the capture
@@ -341,28 +353,30 @@ def get_uncal_triggered_data(handle):
     bdecdata = bothdata[1::2]
     return [adecdata,bdecdata]
 
-# set_trig_samples(handle,postpoints)
+
+# force_trigger( handle, ctrl_reg )
 #
-# Sets the number of samples to take after a trigger.  The unit always
-# takes 1024 samples.  Setting the post-trigger samples to a value
-# less than 1024 means that samples before the trigger will be saved
-# instead.
+# Force a trigger.  Set bit 6 of the control register to configure
+# triggering via the external input, then send a debug code to force
+# the trigger.
 #
-# Arguments: Serial object representing CGR-101,
-#            Number of points to acquire after the trigger
+# Arguments:
+#  handle -- serial object representing the CGR-101
+#  ctrl_reg -- value of the control register
 def force_trigger(handle, ctrl_reg):
     old_reg = ctrl_reg
     new_reg = ctrl_reg | (1 << 6)
     handle.open()
     sendcmd(handle,'S G') # Start the capture
     sendcmd(handle,('S R ' + str(new_reg))) # Ready for forced trigger
-    print('* Control register is now ' + str(new_reg))
+    testlib.infomessage('Forcing trigger')
     sendcmd(handle,('S D 5' )) # Force the trigger
     sendcmd(handle,('S D 4' )) # Return to normal triggering
     # Put the control register back the way it was
     sendcmd(handle,('S R ' + str(old_reg)))
     handle.close()
     
+
 # get_uncal_forced_data(handle, ctrl_reg)
 #
 # Arguments:
@@ -377,9 +391,7 @@ def get_uncal_forced_data(handle,ctrl_reg):
     handle.open()
     sendcmd(handle,'S B') # Query the data
     retdata = handle.read(5000)
-    print('Got data length ' + str(len(retdata)))
     hexdata = binascii.hexlify(retdata)[2:]
-    print(hexdata[0:10])
     handle.close()
     bothdata = [] # Alternating data from both channels
     adecdata = [] # A channel data
@@ -392,3 +404,36 @@ def get_uncal_forced_data(handle,ctrl_reg):
     adecdata = bothdata[0::2]
     bdecdata = bothdata[1::2]
     return [adecdata,bdecdata]
+
+
+# get_cal_data(caldict,gainlist,rawdata)
+#
+# Convert raw data points to voltages.  Return the list of voltages.
+#
+# The raw data list contains samples from both channels.
+def get_cal_data(caldict,gainlist,rawdata):
+    if gainlist[0] == 0:
+        # Channel A has 1x gain
+        chA_slope = caldict['chA_1x_slope']
+        chA_offset = caldict['chA_1x_offset']
+    elif gainlist[0] == 1:
+        # Channel A has 10x gain
+        chA_slope = caldict['chA_10x_slope']
+        chA_offset = caldict['chA_10x_offset']
+    if gainlist[1] == 0:
+        # Channel B has 1x gain
+        chB_slope = caldict['chB_1x_slope']
+        chB_offset = caldict['chB_1x_offset']
+    elif gainlist[1] == 1:
+        # Channel B has 10x gain
+        chB_slope = caldict['chB_10x_slope']
+        chB_offset = caldict['chB_10x_offset']
+    # Process channel A data
+    cha_voltdata = []
+    for sample in rawdata[0]:
+        cha_voltdata.append((511 - (sample + chA_offset))*chA_slope)
+    # Process channel B data
+    chb_voltdata = []
+    for sample in rawdata[1]:
+        chb_voltdata.append((511 - (sample + chB_offset))*chB_slope)
+    return [cha_voltdata,chb_voltdata]
