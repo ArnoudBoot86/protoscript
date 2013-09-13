@@ -93,6 +93,7 @@ def get_cgr():
 # Send an ascii command string to the CGR scope
 def sendcmd(handle,cmd):
     handle.write(cmd + cmdterm)
+    testlib.infomessage(cmd)
     time.sleep(0.1) # Don't know if there's a command buffer
 
 
@@ -113,9 +114,9 @@ def get_samplebits(srate):
     closeval = min(ratelist, key=lambda x:abs(x - srate))
     setval = ratelist.index(closeval)
     testlib.infomessage('Requested sample rate is ' + 
-                        '{:0.0f}'.format(srate/1000) +
-                        'kHz.  Actual rate is ' + 
-                        '{:0.0f}'.format(closeval/1000) + 'kHz.')
+                        '{:0.3f}'.format(srate/1000) +
+                        ' kHz.  Actual rate is ' + 
+                        '{:0.3f}'.format(closeval/1000) + ' kHz.')
     return setval
 
 # askcgr(handle, command)
@@ -282,64 +283,105 @@ def set_hw_gain(handle,gainlist):
     handle.close()
     return gainlist
 
-# set_trig_level( handle, cha_gain, chb_gain, trigsrc, triglev )
+# get_trig_dict( trigsrc, triglev, trigpol, trigpts )
+#
+# Make a dictionary of trigger settings.
+#
+# Arguments:
+#  trigsrc -- Trigger source
+#             0: Channel A
+#             1: Channel B
+#             2: External
+#  triglev -- Trigger voltage (floating point volts)
+#  trigpol -- Trigger slope
+#             0: Rising
+#             1: Falling
+#  trigpts -- Points to acquire after trigger (0 --> 1024)
+def get_trig_dict( trigsrc, triglev, trigpol, trigpts ):
+    trigdict = {}
+    trigdict['trigsrc'] = trigsrc
+    trigdict['triglev'] = triglev
+    trigdict['trigpol'] = trigpol
+    trigdict['trigpts'] = trigpts
+    return trigdict
+
+
+
+# set_trig_level( handle, caldict, gainlist, trigsrc, triglev )
 #
 # Sets the trigger voltage.
 #
 # Arguments:
 #  handle -- serial object representing the CGR-101
-#  cha_gain -- Set the gain for channel A
-#              0: Set 1x gain
-#              1: Set 10x gain (for use with a 10x probe)
-#  chb_gain -- Set the gain for channel B
-#              0: Set 1x gain
-#              1: Set 10x gain (for use with a 10x probe)
+#  caldict -- dictionary of slope and offset values
+#  gainlist -- [cha_gain, chb_gain]
 #  trigsrc -- Which connector the trigger comes in on.
 #             0: Channel A
 #             1: Channel B
 #             2: External trigger pin
 #  triglev -- The trigger level in volts
-def set_trig_level(handle, cha_gain, chb_gain, trigsrc, triglev):
-    trig_coeff = 0.052421484375 # Scale factor for trigger
+def set_trig_level(handle, caldict, gainlist, trigsrc, triglev):
     handle.open()
-    if (cha_gain == 0 and trigsrc == 0): # Channel A gain is 1x
-        trigval = 511 - int(triglev / trig_coeff)
-    elif (cha_gain == 1 and trigsrc == 0): # Channel A gain is 10x
-        trigval = 511 - 10 * int(triglev / trig_coeff)
-    elif (chb_gain == 0 and trigsrc == 1): # Channel B gain is 1x
-        trigval = 511 - int(triglev / trig_coeff)
-    elif (chb_gain == 1 and trigsrc == 1): # Channel B gain is 10x
-        trigval = 511 - 10 * int(triglev / trig_coeff)
+    if (gainlist[0] == 0 and trigsrc == 0): # Channel A gain is 1x
+        trigcts = (511 - caldict['chA_1x_offset'] - 
+                   float(triglev)/caldict['chA_1x_gain'])
+    elif (gainlist[0] == 1 and trigsrc == 0): # Channel A gain is 10x
+        trigcts = (511 - caldict['chA_10x_offset'] - 
+                   float(triglev)/caldict['chA_10x_gain'])
+    elif (gainlist[1] == 0 and trigsrc == 1): # Channel B gain is 1x
+        trigcts = (511 - caldict['chB_1x_offset'] - 
+                   float(triglev)/caldict['chB_1x_gain'])
+    elif (gainlist[1] == 1 and trigsrc == 1): # Channel B gain is 10x
+        trigcts = (511 - caldict['chB_10x_offset'] - 
+                   float(triglev)/caldict['chB_10x_gain'])
     else:
-        trigval = 511 # 0V
-    trigval_l = int(trigval%(2**8))
-    trigval_h = int((trigval%(2**16))/(2**8))
-    sendcmd(handle,('S T ' + str(trigval_h) + ' ' + str(trigval_l)))
+        trigcts = 511 # 0V
+    trigcts_l = int(trigcts%(2**8))
+    trigcts_h = int((trigcts%(2**16))/(2**8))
+    sendcmd(handle,('S T ' + str(trigcts_h) + ' ' + str(trigcts_l)))
     handle.close()
 
 
 
-# get_uncal_triggered_data(handle)
+# get_uncal_triggered_data(handle, trigdict)
 #
-# Arguments: Serial object representing CGR-101
+# Arguments:
+#  handle -- serial object representing the CGR-101
+#  trigdict -- dictionary of trigger settings
 # 
-# Returns uncalibrated integer data from the unit after a normal
-# trigger.  Returns two lists of data: 
-# [ A channel data, B channel data]
-def get_uncal_triggered_data(handle):
+# Returns 
+#  Uncalibrated integer data and the trigger position: 
+#  [ A channel data, B channel data, trigpos]
+# 
+# The trigger position is the position in the circular buffer where
+# the trigger happened.  Each channel has 512 samples, and the trigger
+# position seems to be counted from the 0th position of one channel.
+def get_uncal_triggered_data(handle, trigdict):
     handle.open()
     sendcmd(handle,'S G') # Start the capture
-    print('Waiting for capture to finish...')
+    sys.stdout.write('Waiting for ' + '{:0.1f}'.format(trigdict['triglev']) +
+                     'V trigger at ')
+    if trigdict['trigsrc'] == 0:
+        print('input A...')
+    elif trigdict['trigsrc'] == 1:
+        print('input B...')
+    elif trigdict['trigsrc'] == 2:
+        print('external input...')
     retstr = ' '
     # The unit will reply with 3 bytes when it's done capturing data.
     # Wait on those three bytes.
     while len(retstr) < 3:
         retstr = handle.read(10)
+    hexret = binascii.hexlify(retstr)
+    # trigpos is the position of the trigger sample in datapoints from
+    # the beginning of the data array
+    trigpos = int(hexret[2:],16) - trigdict['trigpts']
+    print('Ending address is ' + hexret[2:])
+    print('This is ' + str(int(hexret[2:],16)))
     sendcmd(handle,'S B') # Query the data
-    retdata = handle.read(5000)
-    print('Got data length ' + str(len(retdata)))
+    retdata = handle.read(10000)
     hexdata = binascii.hexlify(retdata)[2:]
-    print(hexdata[0:10])
+    testlib.infomessage('Got ' + str(len(hexdata)/2) + ' bytes')
     handle.close()
     bothdata = [] # Alternating data from both channels
     adecdata = [] # A channel data
@@ -351,7 +393,15 @@ def get_uncal_triggered_data(handle):
         bothdata.append(sampleval)
     adecdata = bothdata[0::2]
     bdecdata = bothdata[1::2]
-    return [adecdata,bdecdata]
+    return [adecdata,bdecdata,trigpos]
+
+# reset( handle )
+# Perform a hardware reset
+def reset(handle):
+    handle.open()
+    sendcmd(handle,('S D 1' )) # Force the reset
+    sendcmd(handle,('S D 0' )) # Return to normal
+    handle.close()
 
 
 # force_trigger( handle, ctrl_reg )

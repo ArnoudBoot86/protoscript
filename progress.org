@@ -13,8 +13,13 @@
 ** DONE In cgrcal, get_offsets should set values in the dictionary
 ** DONE Change name of make_cal_data to get_cal_data
 ** DONE Move get_cal_data into the library
-** TODO Fix trigger function to use the caldict calibration
+** DONE Fix trigger function to use the caldict calibration
    - The set_trig_level function is just calibration in reverse.  Need
      to use the calibration coefficients to arrive at a number in
      counts from a floating-point voltage.  Also, make set_trig_level
      use gainlist instead of independent gains.
+** DONE Modify cgr_capture to use the new library functions
+** TODO Combine trigger settings into a dictionary
+   - Trigger source, trigger samples, trigger level
+   - This dictionary should get passed to the function that gets
+     triggered data, so it can say something like: waiting for a 1V trigger on channel A.

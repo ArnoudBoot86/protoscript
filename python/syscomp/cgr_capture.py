@@ -27,11 +27,11 @@ Gnuplot.GnuplotOpts.prefer_fifo_data = 0
 
 #--------------------- Begin configure --------------------
 
-triglev = 0.1 # Volts -- the trigger level
-trigsrc = 0 # 0: Channel A, 1: Channel B, 2: External
+triglev = 1 # Volts -- the trigger level
+trigsrc = 1 # 0: Channel A, 1: Channel B, 2: External
 trigpol = 0 # 0: Rising,    1: Falling
-trigpts = 1000 # The number of points to capture after trigger
-fsamp = 1e5 # Hz -- the sample rate
+trigpts = 100 # The number of points to capture after trigger
+fsamp = 20e3 # Hz -- the sample rate
 cha_gain = 0 # 0: 1x gain ( +/-25V max ), 1: 10x gain ( +/-2.5V max )
 chb_gain = 0 # 0: 1x gain ( +/-25V max ), 1: 10x gain ( +/-2.5V max )
 
@@ -42,91 +42,58 @@ cmdterm = '\r\n' # Terminates each command
 
 
 
-
-    
-
-# caldata(offlist,declist)
-#
-# Convert the list of decimal data points to voltages.  Return the
-# list of voltages.
-#
-# The decimal data list contains samples from both channels.  Channel
-# A samples are at odd indexes, and channel B samples are at even
-# indexes.
-def caldata(offlist,decdata):
-    if cha_gain == 0:
-        # Channel A has 1x gain
-        cha_adStepSize = 0.00592
-        cha_offcounts = offlist[0]
-    elif cha_gain == 1:
-        # Channel A has 10x gain
-        cha_adStepSize = 0.0521
-        cha_offcounts = offlist[1]
-    if chb_gain == 0:
-        # Channel B has 1x gain
-        chb_adStepSize = 0.00592
-        chb_offcounts = offlist[0]
-    elif chb_gain == 1:
-        # Channel B has 10x gain
-        chb_adStepSize = 0.0521
-        chb_offcounts = offlist[1]
-    # Process channel A data
-    cha_voltdata = []
-    for sample in decdata[0]:
-        cha_voltdata.append((511 - (sample + 16))*cha_adStepSize)
-    # Process channel B data
-    chb_voltdata = []
-    for sample in decdata[1]:
-        chb_voltdata.append((511 - (sample + 16))*chb_adStepSize)
-    return [cha_voltdata,chb_voltdata]
-
 # plotdata()
 #
 # Plot data from one channel.
-def plotdata(voltdata):
-    gplot = Gnuplot.Gnuplot(debug=1)
+def plotdata(timedata, voltdata, trigpos):
+    gplot = Gnuplot.Gnuplot(debug=0)
     gplot('set terminal x11')
     gplot('set title "Data"')
     gplot('set style data lines')
     gplot('set key bottom left')
     gplot.xlabel('Time (s)')
     gplot.ylabel('Voltage (V)')
+    gplot("set yrange [-2:2]")
     gplot("set format x '%0.0s %c'")
     gplot('set pointsize 1')
     timedata = cgrlib.get_timelist(fsamp)
-    gplot('set arrow from ' + str(timedata[1024-trigpts]) +
-          ',0 to ' +str(timedata[1024-trigpts]) +',1 nohead')
+    if (trigpos < 511):
+        gplot('set arrow from ' + str(timedata[trigpos]) + ',0 to ' +
+              str(timedata[trigpos]) + ',1 nohead') 
+    gdata_cha_notime = Gnuplot.PlotItems.Data(
+        voltdata[0],title='Channel A')
     gdata_cha = Gnuplot.PlotItems.Data(
         timedata,voltdata[0],title='Channel A')
     gdata_chb = Gnuplot.PlotItems.Data(
         timedata,voltdata[1],title='Channel B')
     gplot.plot(gdata_cha,gdata_chb)
+    # gplot.plot(gdata_cha_notime)
+    gplot('set terminal postscript eps color')
+    gplot("set output 'temp.eps'")
+    gplot('replot')
+    gplot('set terminal x11')
     raw_input('* Press return to exit...')
 
         
 def main(): 
+    caldict = cgrlib.load_cal()
+    trigdict = cgrlib.get_trig_dict( trigsrc, triglev, trigpol, trigpts)
     cgr = cgrlib.get_cgr()
-    offlist = cgrlib.get_offlist(cgr)
-    print('* Offset list')
-    print(offlist)
-    cgrlib.set_hw_gain(cgr,cha_gain,chb_gain)
+    cgrlib.reset(cgr)
+    gainlist = cgrlib.set_hw_gain(cgr, [cha_gain,chb_gain])
 
-    cgrlib.set_trig_level(cgr,cha_gain,chb_gain,trigsrc,triglev)
+    cgrlib.set_trig_level(cgr, caldict, gainlist, trigsrc, triglev)
     cgrlib.set_trig_samples(cgr,trigpts)
+    ctrl_reg = cgrlib.set_ctrl_reg(cgr, fsamp, trigsrc, trigpol)
+    
+    # Wait for trigger, then return uncalibrated data
+    tracedata = cgrlib.get_uncal_triggered_data(cgr,trigdict)
+    trigpos = tracedata[2]
 
-    ctrl_reg = cgrlib.set_ctrl_reg(cgr,fsamp,trigsrc,trigpol)
-    tracedata = cgrlib.get_uncal_data(cgr) # List of uncalibrated
-                                           # integer values
-    print('* Channel A uncal data')
-    print(tracedata[0][0:100])
-    print('* Channel B uncal data')
-    print(tracedata[1][0:100])
-    voltdata = caldata(offlist,tracedata) # List of voltages
-    print('* Channel A data')
-    print(voltdata[0][0:100])
-    print('* Channel B data')
-    print(voltdata[1][0:100])
-    plotdata(voltdata)
+    # Apply calibration
+    voltdata = cgrlib.get_cal_data(caldict,gainlist,[tracedata[0],tracedata[1]])
+    timedata = cgrlib.get_timelist(fsamp)
+    plotdata(timedata, voltdata, trigpos)
 
 
 # Execute main() from command line
