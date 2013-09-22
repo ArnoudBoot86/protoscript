@@ -19,7 +19,11 @@
      counts from a floating-point voltage.  Also, make set_trig_level
      use gainlist instead of independent gains.
 ** DONE Modify cgr_capture to use the new library functions
-** TODO Combine trigger settings into a dictionary
+** DONE Combine trigger settings into a dictionary
    - Trigger source, trigger samples, trigger level
    - This dictionary should get passed to the function that gets
      triggered data, so it can say something like: waiting for a 1V trigger on channel A.
+** DONE Warn on actual sample frequency when different than requested
+** TODO Make info message for what unit reports as end of capture location
+** TODO Make option to force trigger while waiting for trigger
+** TODO Draw crosshairs at the trigger point

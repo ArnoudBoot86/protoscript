@@ -2,16 +2,21 @@
 #
 # Library functions for use with the CGR-101 USB oscilloscope 
 
+import logging  # The python logging module
 import serial   # Provides serial class Serial
 import time     # For making pauses
 import binascii # For hex string conversion
 import pickle # For writing and reading calibration data
 import testlib # For colored status messages
 import sys # For sys.exit()
+import collections # For rotatable lists
 
 # File used to hold the calibration constant dictionary
 calfile = 'cgrcal.pkl'
 
+# create logger
+module_logger = logging.getLogger('root.cgrlib')
+module_logger.setLevel(logging.DEBUG)
 
 # comports() returns a list of comports available in the system
 from serial.tools.list_ports import comports 
@@ -70,11 +75,12 @@ def get_cgr():
             # If the port can be configured, it might be a CGR.  Check
             # to make sure.
             retnum = cgr.write("i\r\n") # Request the identity string
-            rawstr = cgr.read(20) # Read a small number of bytes
+            rawstr = cgr.read(10) # Read a small number of bytes
             cgr.close()
             if rawstr.count('Syscomp') == 1:
                 testlib.passmessage('Connecting to CGR-101 at ' +
                                     str(serport[0]))
+
                 return cgr
             else:
                 testlib.infomessage('Could not open ' + serport[0])
@@ -87,6 +93,14 @@ def get_cgr():
                 testlib.failmessage('Except Did not find any CGR-101 units')
                 sys.exit()
 
+def flush_cgr(handle):
+    readstr = 'junk'
+    while (len(readstr) > 0):
+        readstr = handle.read(100)
+        testlib.infomessage('Flushed ' + str(len(readstr)) + ' characters')
+
+    
+    
 
 # sendcmd(handle,command)
 #    
@@ -94,11 +108,13 @@ def get_cgr():
 def sendcmd(handle,cmd):
     handle.write(cmd + cmdterm)
     testlib.infomessage(cmd)
+    module_logger.info('Sent a command')
     time.sleep(0.1) # Don't know if there's a command buffer
 
 
 
-# get_samplebits(sample rate)
+
+# get_samplebits(Requested sample rate)
 #
 # Given a sample rate in Hz, returns the closest possible hardware
 # sample rate setting.  This setting goes in bits 0:3 of the control
@@ -106,18 +122,17 @@ def sendcmd(handle,cmd):
 #
 # The sample rate is given by (20Ms/s)/2**N, where N is the 4-bit
 # value returned by this function.
-def get_samplebits(srate):
-    baserate = int(20e6) # Maximum sample rate
+#
+# Returns:
+#  [value for control register, actual sample rate]
+def get_samplebits(fsamp_req):
+    baserate = 20e6 # Maximum sample rate
     ratelist = []
     for nval in range(2**4):
-        ratelist.append( int(baserate / ( 2**nval )))
-    closeval = min(ratelist, key=lambda x:abs(x - srate))
-    setval = ratelist.index(closeval)
-    testlib.infomessage('Requested sample rate is ' + 
-                        '{:0.3f}'.format(srate/1000) +
-                        ' kHz.  Actual rate is ' + 
-                        '{:0.3f}'.format(closeval/1000) + ' kHz.')
-    return setval
+        ratelist.append( (baserate / ( 2**nval )) )
+    fsamp_act = min(ratelist, key=lambda x:abs(x - fsamp_req))
+    setval = ratelist.index(fsamp_act)
+    return [setval,fsamp_act]
 
 # askcgr(handle, command)
 #
@@ -144,21 +159,23 @@ def askcgr(handle,cmd):
 def get_state(handle):
     handle.open()
     retstr = askcgr(handle,'S S')
+    print(retstr)
     if (retstr == "No reply"):
         print('getstat: no response')
     handle.close() 
     return retstr
 
-# get_timelist(Desired sample rate)
+
+# get_timelist(sample rate)
 #
-# Returns the list of sample times.  The actual sample rate is first
-# calculated.
+# Returns the list of sample times.  Remember that the CGR-101 takes
+# 2048 samples, but this is a total for both channels.  Each channel
+# will have 1024 samples.  The sample rate calculation is based on
+# these 1024 samples -- not 2048.
 def get_timelist(fsamp):
-    # Calculate the actual sample rate in Hz
-    realrate = int(20e6 / ( 2**(get_samplebits(fsamp)) ))
     timelist = []
-    for samplenum in range(512):
-        timelist.append( samplenum * (1.0/realrate) )
+    for samplenum in range(1024):
+        timelist.append( samplenum * (1.0/fsamp) )
     return timelist
 
 
@@ -219,8 +236,8 @@ def set_trig_samples(handle,postpoints):
 #
 # Arguments:
 #  handle -- serial object representing the CGR-101
-#  fsamp -- requested sample rate in Hz.  The actual rate will be
-#           determined using those allowed for the unit.
+#  fsamp_req -- requested sample rate in Hz.  The actual rate will be
+#               determined using those allowed for the unit.
 #  trigsrc -- Which connector the trigger comes in on.
 #             0: Channel A
 #             1: Channel B
@@ -230,9 +247,9 @@ def set_trig_samples(handle,postpoints):
 #             1: Falling edge
 #
 # Returns the register value
-def set_ctrl_reg(handle,fsamp,trigsrc,trigpol):
+def set_ctrl_reg(handle,fsamp_req,trigsrc,trigpol):
     reg_value = 0
-    reg_value += get_samplebits(fsamp) # Set sample rate
+    [reg_value,fsamp_act] = get_samplebits(fsamp_req) # Set sample rate
     # Configure the trigger source
     if trigsrc == 0: # Trigger on channel A
         reg_value += (0 << 4)
@@ -248,7 +265,7 @@ def set_ctrl_reg(handle,fsamp,trigsrc,trigpol):
     handle.open()
     sendcmd(handle,('S R ' + str(reg_value)))
     handle.close()
-    return reg_value
+    return [reg_value,fsamp_act]
 
 # set_hw_gain( handle, gainlist)
 #
@@ -351,11 +368,7 @@ def set_trig_level(handle, caldict, gainlist, trigsrc, triglev):
 # 
 # Returns 
 #  Uncalibrated integer data and the trigger position: 
-#  [ A channel data, B channel data, trigpos]
-# 
-# The trigger position is the position in the circular buffer where
-# the trigger happened.  Each channel has 512 samples, and the trigger
-# position seems to be counted from the 0th position of one channel.
+#  [ A channel data, B channel data]
 def get_uncal_triggered_data(handle, trigdict):
     handle.open()
     sendcmd(handle,'S G') # Start the capture
@@ -368,32 +381,33 @@ def get_uncal_triggered_data(handle, trigdict):
     elif trigdict['trigsrc'] == 2:
         print('external input...')
     retstr = ' '
-    # The unit will reply with 3 bytes when it's done capturing data.
+    # The unit will reply with 3 bytes when it's done capturing data:
+    # "A", high byte of last capture location, low byte
     # Wait on those three bytes.
     while len(retstr) < 3:
         retstr = handle.read(10)
-    hexret = binascii.hexlify(retstr)
-    # trigpos is the position of the trigger sample in datapoints from
-    # the beginning of the data array
-    trigpos = int(hexret[2:],16) - trigdict['trigpts']
-    print('Ending address is ' + hexret[2:])
-    print('This is ' + str(int(hexret[2:],16)))
+    lastpoint = int(binascii.hexlify(retstr)[2:],16)
+    print('Ending address is ' + str(lastpoint))
     sendcmd(handle,'S B') # Query the data
-    retdata = handle.read(10000)
-    hexdata = binascii.hexlify(retdata)[2:]
+    retdata = handle.read(5000) # Read until timeout
+    hexdata = binascii.hexlify(retdata)[2:] 
     testlib.infomessage('Got ' + str(len(hexdata)/2) + ' bytes')
     handle.close()
     bothdata = [] # Alternating data from both channels
-    adecdata = [] # A channel data
-    bdecdata = [] # B channel data 
     # Data returned from the unit has alternating words of channel A
-    # and channel B data.  Each word is 16 bits (two hex characters)
-    for samplenum in range(1024):
+    # and channel B data.  Each word is 16 bits (four hex characters)
+    for samplenum in range(2048):
         sampleval = int(hexdata[(samplenum*4):(samplenum*4 + 4)],16)
         bothdata.append(sampleval)
-    adecdata = bothdata[0::2]
-    bdecdata = bothdata[1::2]
-    return [adecdata,bdecdata,trigpos]
+    adecdata = collections.deque(bothdata[0::2])
+    adecdata.rotate(1024-lastpoint)
+    bdecdata = collections.deque(bothdata[1::2])
+    bdecdata.rotate(1024-lastpoint)
+    
+    return [list(adecdata),list(bdecdata)]
+
+
+    
 
 # reset( handle )
 # Perform a hardware reset
