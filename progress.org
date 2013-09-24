@@ -26,4 +26,8 @@
 ** DONE Warn on actual sample frequency when different than requested
 ** TODO Make info message for what unit reports as end of capture location
 ** TODO Make option to force trigger while waiting for trigger
-** TODO Draw crosshairs at the trigger point
+** DONE Draw crosshairs at the trigger point
+** DONE Get milliseconds out of logger time string
+** DONE Move trigger level into a separate config file
+** TODO Make a function that loads a configuration file
+   - Or makes a new one if one is not found.

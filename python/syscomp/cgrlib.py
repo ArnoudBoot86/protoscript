@@ -11,8 +11,12 @@ import testlib # For colored status messages
 import sys # For sys.exit()
 import collections # For rotatable lists
 
+import ConfigParser # For writing and reading the config file
+
 # File used to hold the calibration constant dictionary
 calfile = 'cgrcal.pkl'
+# Configuration file
+configfile = 'cgr.cfg'
 
 # create logger
 module_logger = logging.getLogger('root.cgrlib')
@@ -23,6 +27,28 @@ from serial.tools.list_ports import comports
 
 
 cmdterm = '\r\n' # Terminates each command
+
+
+# init_config()
+#
+# Initialize the configuration file.
+def init_config():
+    config = ConfigParser.RawConfigParser()
+    # When adding sections or items, add them in the reverse order of
+    # how you want them to be displayed in the actual file.
+    # In addition, please note that using RawConfigParser's and the raw
+    # mode of ConfigParser's respective set functions, you can assign
+    # non-string values to keys internally, but will receive an error
+    # when attempting to write to a file or when you get it in non-raw
+    # mode. SafeConfigParser does not allow such assignments to take place.
+    config.add_section('Trigger')
+    config.set('Trigger', '# Set the trigger level','')
+    config.set('Trigger', 'level', '1')
+    # Writing our configuration file to 'example.cfg'
+    module_logger.debug('Writing configuration file ' + configfile)
+    with open(configfile, 'wb') as outfile:
+        outfile.write('# Some junk comment\n')
+        config.write(outfile)
 
 
 # write_cal(offlist)

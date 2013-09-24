@@ -27,7 +27,7 @@ fh.setLevel(logging.DEBUG)
 
 color_formatter = ColoredFormatter(
     "%(log_color)s%(levelname)-8s%(reset)s %(white)s%(message)s",
-    datefmt="%(asctime)s",
+    datefmt=None,
     reset=True,
     log_colors={
         'DEBUG':    'cyan',
@@ -39,7 +39,8 @@ color_formatter = ColoredFormatter(
 )
 
 plain_formatter = logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    '%Y-%m-%d %H:%M:%S'
 )
 
 # Colored output goes to the console
@@ -122,7 +123,8 @@ def plotdata(timedata, voltdata, trigdict):
     raw_input('* Press return to exit...')
 
         
-def main(): 
+def main():
+    cgrlib.init_config()
     caldict = cgrlib.load_cal()
     trigdict = cgrlib.get_trig_dict( trigsrc, triglev, trigpol, trigpts)
     cgr = cgrlib.get_cgr()
