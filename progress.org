@@ -3,6 +3,7 @@
 ** <2013-09-01 Sun> Created this project
 * ------------------------ TODO list ----------------------------
 * Work on CGR code
+** TODO Move all settings to configuration file
 ** TODO Make option to force trigger while waiting for trigger
    - This will require the curses module.  That will require some learning.
 ** DONE Pull out old testlib messages

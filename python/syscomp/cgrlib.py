@@ -28,11 +28,29 @@ from serial.tools.list_ports import comports
 
 cmdterm = '\r\n' # Terminates each command
 
-
-# init_config()
+# load_config(configuration file name)
 #
-# Initialize the configuration file.
-def init_config():
+# Open the configuration file (if it exists) and return the
+# configuration object.
+def load_config(configFileName):
+    config = ConfigParser.RawConfigParser()
+    try:
+        config.readfp(open(configFileName))
+        return config
+    except IOError:
+        module_logger.warning('Did not find configuration file ' +
+                              configFileName)
+        config = init_config(configFileName)
+        return config
+
+
+
+
+# init_config(configuration file name)
+#
+# Initialize the configuration file.  The file name should be
+# specified by the user in the application code.
+def init_config(configFileName):
     config = ConfigParser.RawConfigParser()
     # When adding sections or items, add them in the reverse order of
     # how you want them to be displayed in the actual file.
@@ -45,10 +63,11 @@ def init_config():
     config.set('Trigger', '# Set the trigger level','')
     config.set('Trigger', 'level', '1')
     # Writing our configuration file to 'example.cfg'
-    module_logger.debug('Writing configuration file ' + configfile)
-    with open(configfile, 'wb') as outfile:
+    module_logger.debug('Initializing configuration file ' + configFileName)
+    with open(configFileName, 'wb') as outfile:
         outfile.write('# Some junk comment\n')
         config.write(outfile)
+    return config
 
 
 # write_cal(offlist)
@@ -71,9 +90,9 @@ def load_cal():
         fin = open(calfile,'rb')
         caldict = pickle.load(fin)
         fin.close()
-    except:
+    except IOError:
         caldict = {}
-        testlib.infomessage('Failed to open calibration file...using defaults')
+        module_logger.warning('Failed to open calibration file...using defaults')
         caldict['chA_1x_offset'] = 0
         caldict['chA_1x_gain'] = 0.0445
         caldict['chA_10x_offset'] = 0

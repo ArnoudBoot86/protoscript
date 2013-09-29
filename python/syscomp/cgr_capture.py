@@ -5,8 +5,8 @@
 
 import time     # For making pauses
 import os       # For basic file I/O
-import testlib  # For colored error messages
-
+import ConfigParser # For reading and writing the configuration file
+import sys # For sys.exit()
 
 
 
@@ -52,6 +52,9 @@ logger.addHandler(ch)
 fh.setFormatter(plain_formatter)
 logger.addHandler(fh)
 
+# Configuration file
+configfile = 'cgr.cfg'
+
 
 
 
@@ -71,6 +74,7 @@ Gnuplot.GnuplotOpts.prefer_fifo_data = 0
 
 #--------------------------- Begin configure --------------------------
 
+configFile = 'cgr.cfg' # The configuration file
 triglev = 1 # Volts -- the trigger level
 trigsrc = 1 # 0: Channel A, 1: Channel B, 2: External
 trigpol = 1 # 0: Rising,    1: Falling
@@ -127,9 +131,12 @@ def plotdata(timedata, voltdata, trigdict):
 
         
 def main():
-    cgrlib.init_config()
+    config = cgrlib.load_config(configFile)
+    ctriglevel = config.getfloat('Trigger','level')
+    print ('Trigger level from configuration is ' + str(ctriglevel))
     caldict = cgrlib.load_cal()
     trigdict = cgrlib.get_trig_dict( trigsrc, triglev, trigpol, trigpts)
+    sys.exit() # For running without cgr
     cgr = cgrlib.get_cgr()
     gainlist = cgrlib.set_hw_gain(cgr, [cha_gain,chb_gain])
 
