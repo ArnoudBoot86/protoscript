@@ -88,8 +88,19 @@ def load_cal():
 #
 # Returns an instrument variable for the cgr scope, or an error
 # message if the connection fails.
+#
+# The comports() function returns an iterable that yields tuples of
+# three strings:
+#
+# 1. Port name as it can be passed to serial.Serial
+# 2. Description in human readable form
+# 3. Sort of hardware ID -- may contain VID:PID of USB-serial adapters.
 def get_cgr():
     portlist = comports()
+    # Add undetectable serial ports here
+    portlist.append(('/dev/ttyS0', 'ttyS0', 'n/a'))
+    portlist.append(('/dev/ttyS9', 'ttyS9', 'n/a'))
+
     for serport in portlist:
         rawstr = ''
         try:
@@ -104,17 +115,16 @@ def get_cgr():
             rawstr = cgr.read(10) # Read a small number of bytes
             cgr.close()
             if rawstr.count('Syscomp') == 1:
-                testlib.passmessage('Connecting to CGR-101 at ' +
+                module_logger.info('Connecting to CGR-101 at ' +
                                     str(serport[0]))
-
                 return cgr
             else:
-                testlib.infomessage('Could not open ' + serport[0])
+                module_logger.info('Could not open ' + serport[0])
                 if serport == portlist[-1]: # This is the last port
-                    testlib.failmessage('Did not find any CGR-101 units')
+                    module_logger.error('Did not find any CGR-101 units')
                     sys.exit()
         except serial.serialutil.SerialException:
-            testlib.infomessage('Could not open ' + serport[0])
+            module_logger.info('Could not open ' + serport[0])
             if serport == portlist[-1]: # This is the last port
                 testlib.failmessage('Except Did not find any CGR-101 units')
                 sys.exit()
@@ -133,8 +143,7 @@ def flush_cgr(handle):
 # Send an ascii command string to the CGR scope
 def sendcmd(handle,cmd):
     handle.write(cmd + cmdterm)
-    testlib.infomessage(cmd)
-    module_logger.info('Sent a command')
+    module_logger.debug('Sent command ' + cmd)
     time.sleep(0.1) # Don't know if there's a command buffer
 
 
@@ -406,18 +415,18 @@ def get_uncal_triggered_data(handle, trigdict):
         print('input B...')
     elif trigdict['trigsrc'] == 2:
         print('external input...')
-    retstr = ' '
+    retstr = ''
     # The unit will reply with 3 bytes when it's done capturing data:
     # "A", high byte of last capture location, low byte
     # Wait on those three bytes.
-    while len(retstr) < 3:
+    while (len(retstr) < 3):
         retstr = handle.read(10)
     lastpoint = int(binascii.hexlify(retstr)[2:],16)
-    print('Ending address is ' + str(lastpoint))
+    module_logger.debug('Capture ended at address ' + str(lastpoint))
     sendcmd(handle,'S B') # Query the data
     retdata = handle.read(5000) # Read until timeout
-    hexdata = binascii.hexlify(retdata)[2:] 
-    testlib.infomessage('Got ' + str(len(hexdata)/2) + ' bytes')
+    hexdata = binascii.hexlify(retdata)[2:]
+    module_logger.debug('Got ' + str(len(hexdata)/2) + ' bytes')
     handle.close()
     bothdata = [] # Alternating data from both channels
     # Data returned from the unit has alternating words of channel A

@@ -9,7 +9,8 @@ import testlib  # For colored error messages
 
 
 
-#------------------- Configure logging -------------------
+
+#------------------------- Configure logging --------------------------
 import logging
 from colorlog import ColoredFormatter
 
@@ -17,7 +18,7 @@ from colorlog import ColoredFormatter
 logger = logging.getLogger('root')
 logger.setLevel(logging.DEBUG)
 
-# create console handler and set level to debug
+# create console handler (ch) and set level to debug
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 
@@ -26,7 +27,7 @@ fh = logging.FileHandler('cgrlog.log',mode='a',encoding=None,delay=False)
 fh.setLevel(logging.DEBUG)
 
 color_formatter = ColoredFormatter(
-    "%(log_color)s%(levelname)-8s%(reset)s %(white)s%(message)s",
+    '[ %(log_color)s%(levelname)-8s%(reset)s] %(message)s',
     datefmt=None,
     reset=True,
     log_colors={
@@ -39,7 +40,7 @@ color_formatter = ColoredFormatter(
 )
 
 plain_formatter = logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    '%(asctime)s - %(name)s - [ %(levelname)s ] - %(message)s',
     '%Y-%m-%d %H:%M:%S'
 )
 
@@ -53,10 +54,12 @@ logger.addHandler(fh)
 
 
 
-logger.debug('This message should go to the log file')
+
 
 import cgrlib
 
+#------------------ Configure plotting with gnuplot -------------------
+import logging
 # For the Gnuplot module
 from numpy import * # For gnuplot.py
 import Gnuplot, Gnuplot.funcutils # For gnuplot.py
@@ -66,7 +69,7 @@ import Gnuplot, Gnuplot.funcutils # For gnuplot.py
 Gnuplot.GnuplotOpts.prefer_fifo_data = 0
 
 
-#--------------------- Begin configure --------------------
+#--------------------------- Begin configure --------------------------
 
 triglev = 1 # Volts -- the trigger level
 trigsrc = 1 # 0: Channel A, 1: Channel B, 2: External
@@ -139,10 +142,7 @@ def main():
                        '{:0.3f} kHz '.format(float(fsamp_req)/1000) +
                        'adjusted to ' + 
                        '{:0.3f} kHz '.format(float(fsamp_act)/1000))
-        testlib.warnmessage('Requested sample frequency ' + 
-                            '{:0.3f} kHz '.format(float(fsamp_req)/1000) +
-                            'adjusted to ' + 
-                            '{:0.3f} kHz '.format(float(fsamp_act)/1000))
+
 
     # Wait for trigger, then return uncalibrated data
     [ctrl_reg, fsamp_act] = cgrlib.set_ctrl_reg(cgr, fsamp_req, 

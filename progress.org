@@ -3,8 +3,13 @@
 ** <2013-09-01 Sun> Created this project
 * ------------------------ TODO list ----------------------------
 * Work on CGR code
-** TODO Fix gain setting
-   - I really dont' think my tiny mp3 player is putting out 10V
+** TODO Make option to force trigger while waiting for trigger
+   - This will require the curses module.  That will require some learning.
+** DONE Pull out old testlib messages
+   - These should be handled by the logger
+** DONE Add list of serial ports not detected by comports
+   - This will help with the cygwin situation
+** TODO Create dummy connection
 ** DONE Get the control register setting into the library
 ** DONE Get the hardware gain setting into the library
 ** DONE Get the trigger level setting into the library
@@ -24,10 +29,10 @@
    - This dictionary should get passed to the function that gets
      triggered data, so it can say something like: waiting for a 1V trigger on channel A.
 ** DONE Warn on actual sample frequency when different than requested
-** TODO Make info message for what unit reports as end of capture location
-** TODO Make option to force trigger while waiting for trigger
+** DONE Make info message for what unit reports as end of capture location
 ** DONE Draw crosshairs at the trigger point
 ** DONE Get milliseconds out of logger time string
 ** DONE Move trigger level into a separate config file
 ** TODO Make a function that loads a configuration file
    - Or makes a new one if one is not found.
+** TODO Calibration coefficients should go in the configuration file
