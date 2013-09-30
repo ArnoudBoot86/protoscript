@@ -5,11 +5,12 @@
 
 import time     # For making pauses
 import os       # For basic file I/O
-import testlib  # For colored error messages
+import ConfigParser # For reading and writing the configuration file
+import sys # For sys.exit()
 
 
 
-#------------------- Configure logging -------------------
+#------------------------- Configure logging --------------------------
 import logging
 from colorlog import ColoredFormatter
 
@@ -17,7 +18,7 @@ from colorlog import ColoredFormatter
 logger = logging.getLogger('root')
 logger.setLevel(logging.DEBUG)
 
-# create console handler and set level to debug
+# create console handler (ch) and set level to debug
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 
@@ -26,7 +27,7 @@ fh = logging.FileHandler('cgrlog.log',mode='a',encoding=None,delay=False)
 fh.setLevel(logging.DEBUG)
 
 color_formatter = ColoredFormatter(
-    "%(log_color)s%(levelname)-8s%(reset)s %(white)s%(message)s",
+    '[ %(log_color)s%(levelname)-8s%(reset)s] %(message)s',
     datefmt=None,
     reset=True,
     log_colors={
@@ -39,7 +40,7 @@ color_formatter = ColoredFormatter(
 )
 
 plain_formatter = logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    '%(asctime)s - %(name)s - [ %(levelname)s ] - %(message)s',
     '%Y-%m-%d %H:%M:%S'
 )
 
@@ -51,8 +52,17 @@ logger.addHandler(ch)
 fh.setFormatter(plain_formatter)
 logger.addHandler(fh)
 
+# Configuration file
+configfile = 'cgr.cfg'
+
+
+
+
+
 import cgrlib
 
+#------------------ Configure plotting with gnuplot -------------------
+import logging
 # For the Gnuplot module
 from numpy import * # For gnuplot.py
 import Gnuplot, Gnuplot.funcutils # For gnuplot.py
@@ -62,8 +72,9 @@ import Gnuplot, Gnuplot.funcutils # For gnuplot.py
 Gnuplot.GnuplotOpts.prefer_fifo_data = 0
 
 
-#--------------------- Begin configure --------------------
+#--------------------------- Begin configure --------------------------
 
+configFile = 'cgr.cfg' # The configuration file
 triglev = 1 # Volts -- the trigger level
 trigsrc = 1 # 0: Channel A, 1: Channel B, 2: External
 trigpol = 1 # 0: Rising,    1: Falling
@@ -120,11 +131,13 @@ def plotdata(timedata, voltdata, trigdict):
 
         
 def main():
-    logger.debug('Starting main')
-    cgr = cgrlib.get_cgr()
-    cgrlib.init_config()
+    config = cgrlib.load_config(configFile)
+    ctriglevel = config.getfloat('Trigger','level')
+    print ('Trigger level from configuration is ' + str(ctriglevel))
     caldict = cgrlib.load_cal()
     trigdict = cgrlib.get_trig_dict( trigsrc, triglev, trigpol, trigpts)
+    sys.exit() # For running without cgr
+    cgr = cgrlib.get_cgr()
     gainlist = cgrlib.set_hw_gain(cgr, [cha_gain,chb_gain])
 
     cgrlib.set_trig_level(cgr, caldict, gainlist, trigsrc, triglev)
@@ -136,10 +149,7 @@ def main():
                        '{:0.3f} kHz '.format(float(fsamp_req)/1000) +
                        'adjusted to ' + 
                        '{:0.3f} kHz '.format(float(fsamp_act)/1000))
-        testlib.warnmessage('Requested sample frequency ' + 
-                            '{:0.3f} kHz '.format(float(fsamp_req)/1000) +
-                            'adjusted to ' + 
-                            '{:0.3f} kHz '.format(float(fsamp_act)/1000))
+
 
     # Wait for trigger, then return uncalibrated data
     [ctrl_reg, fsamp_act] = cgrlib.set_ctrl_reg(cgr, fsamp_req, 

@@ -28,11 +28,29 @@ from serial.tools.list_ports import comports
 
 cmdterm = '\r\n' # Terminates each command
 
-
-# init_config()
+# load_config(configuration file name)
 #
-# Initialize the configuration file.
-def init_config():
+# Open the configuration file (if it exists) and return the
+# configuration object.
+def load_config(configFileName):
+    config = ConfigParser.RawConfigParser()
+    try:
+        config.readfp(open(configFileName))
+        return config
+    except IOError:
+        module_logger.warning('Did not find configuration file ' +
+                              configFileName)
+        config = init_config(configFileName)
+        return config
+
+
+
+
+# init_config(configuration file name)
+#
+# Initialize the configuration file.  The file name should be
+# specified by the user in the application code.
+def init_config(configFileName):
     config = ConfigParser.RawConfigParser()
     # When adding sections or items, add them in the reverse order of
     # how you want them to be displayed in the actual file.
@@ -45,10 +63,11 @@ def init_config():
     config.set('Trigger', '# Set the trigger level','')
     config.set('Trigger', 'level', '1')
     # Writing our configuration file to 'example.cfg'
-    module_logger.debug('Writing configuration file ' + configfile)
-    with open(configfile, 'wb') as outfile:
+    module_logger.debug('Initializing configuration file ' + configFileName)
+    with open(configFileName, 'wb') as outfile:
         outfile.write('# Some junk comment\n')
         config.write(outfile)
+    return config
 
 
 # write_cal(offlist)
@@ -71,9 +90,9 @@ def load_cal():
         fin = open(calfile,'rb')
         caldict = pickle.load(fin)
         fin.close()
-    except:
+    except IOError:
         caldict = {}
-        testlib.infomessage('Failed to open calibration file...using defaults')
+        module_logger.warning('Failed to open calibration file...using defaults')
         caldict['chA_1x_offset'] = 0
         caldict['chA_1x_gain'] = 0.0445
         caldict['chA_10x_offset'] = 0
@@ -88,10 +107,19 @@ def load_cal():
 #
 # Returns an instrument variable for the cgr scope, or an error
 # message if the connection fails.
+#
+# The comports() function returns an iterable that yields tuples of
+# three strings:
+#
+# 1. Port name as it can be passed to serial.Serial
+# 2. Description in human readable form
+# 3. Sort of hardware ID -- may contain VID:PID of USB-serial adapters.
 def get_cgr():
-    module_logger.debug('Getting the cgr')
     portlist = comports()
-    portlist.append('/dev/tty')
+    # Add undetectable serial ports here
+    portlist.append(('/dev/ttyS0', 'ttyS0', 'n/a'))
+    portlist.append(('/dev/ttyS9', 'ttyS9', 'n/a'))
+
     for serport in portlist:
         rawstr = ''
         try:
@@ -106,17 +134,16 @@ def get_cgr():
             rawstr = cgr.read(10) # Read a small number of bytes
             cgr.close()
             if rawstr.count('Syscomp') == 1:
-                testlib.passmessage('Connecting to CGR-101 at ' +
+                module_logger.info('Connecting to CGR-101 at ' +
                                     str(serport[0]))
-
                 return cgr
             else:
-                testlib.infomessage('Could not open ' + serport[0])
+                module_logger.info('Could not open ' + serport[0])
                 if serport == portlist[-1]: # This is the last port
-                    testlib.failmessage('Did not find any CGR-101 units')
+                    module_logger.error('Did not find any CGR-101 units')
                     sys.exit()
         except serial.serialutil.SerialException:
-            testlib.infomessage('Could not open ' + serport[0])
+            module_logger.info('Could not open ' + serport[0])
             if serport == portlist[-1]: # This is the last port
                 testlib.failmessage('Except Did not find any CGR-101 units')
                 sys.exit()
@@ -135,8 +162,7 @@ def flush_cgr(handle):
 # Send an ascii command string to the CGR scope
 def sendcmd(handle,cmd):
     handle.write(cmd + cmdterm)
-    testlib.infomessage(cmd)
-    module_logger.info('Sent a command')
+    module_logger.debug('Sent command ' + cmd)
     time.sleep(0.1) # Don't know if there's a command buffer
 
 
@@ -408,18 +434,18 @@ def get_uncal_triggered_data(handle, trigdict):
         print('input B...')
     elif trigdict['trigsrc'] == 2:
         print('external input...')
-    retstr = ' '
+    retstr = ''
     # The unit will reply with 3 bytes when it's done capturing data:
     # "A", high byte of last capture location, low byte
     # Wait on those three bytes.
-    while len(retstr) < 3:
+    while (len(retstr) < 3):
         retstr = handle.read(10)
     lastpoint = int(binascii.hexlify(retstr)[2:],16)
-    print('Ending address is ' + str(lastpoint))
+    module_logger.debug('Capture ended at address ' + str(lastpoint))
     sendcmd(handle,'S B') # Query the data
     retdata = handle.read(5000) # Read until timeout
-    hexdata = binascii.hexlify(retdata)[2:] 
-    testlib.infomessage('Got ' + str(len(hexdata)/2) + ' bytes')
+    hexdata = binascii.hexlify(retdata)[2:]
+    module_logger.debug('Got ' + str(len(hexdata)/2) + ' bytes')
     handle.close()
     bothdata = [] # Alternating data from both channels
     # Data returned from the unit has alternating words of channel A
