@@ -89,7 +89,9 @@ def load_cal():
 # Returns an instrument variable for the cgr scope, or an error
 # message if the connection fails.
 def get_cgr():
+    module_logger.debug('Getting the cgr')
     portlist = comports()
+    portlist.append('/dev/tty')
     for serport in portlist:
         rawstr = ''
         try:

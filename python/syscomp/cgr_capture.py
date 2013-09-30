@@ -51,10 +51,6 @@ logger.addHandler(ch)
 fh.setFormatter(plain_formatter)
 logger.addHandler(fh)
 
-
-
-logger.debug('This message should go to the log file')
-
 import cgrlib
 
 # For the Gnuplot module
@@ -124,10 +120,11 @@ def plotdata(timedata, voltdata, trigdict):
 
         
 def main():
+    logger.debug('Starting main')
+    cgr = cgrlib.get_cgr()
     cgrlib.init_config()
     caldict = cgrlib.load_cal()
     trigdict = cgrlib.get_trig_dict( trigsrc, triglev, trigpol, trigpts)
-    cgr = cgrlib.get_cgr()
     gainlist = cgrlib.set_hw_gain(cgr, [cha_gain,chb_gain])
 
     cgrlib.set_trig_level(cgr, caldict, gainlist, trigsrc, triglev)

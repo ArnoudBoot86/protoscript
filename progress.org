@@ -31,3 +31,6 @@
 ** DONE Move trigger level into a separate config file
 ** TODO Make a function that loads a configuration file
    - Or makes a new one if one is not found.
+** TODO Seed the list of comports
+   - This should include comports available via cygwin but not
+     returned by comports.
