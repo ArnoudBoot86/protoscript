@@ -33,7 +33,12 @@
 ** DONE Make info message for what unit reports as end of capture location
 ** DONE Draw crosshairs at the trigger point
 ** DONE Get milliseconds out of logger time string
-** DONE Move trigger level into a separate config file
+** DONE Move trigger level x3into a separate config file
 ** TODO Make a function that loads a configuration file
    - Or makes a new one if one is not found.
 ** TODO Calibration coefficients should go in the configuration file
+** TODO Make function to fill trigger dictionary
+   - The configuration file is read using the libary function, and the
+     configuration file object is returned to the application code.
+     So this object can be passed to a library function again, and the
+     library function can return a populated trigger dictionary.
