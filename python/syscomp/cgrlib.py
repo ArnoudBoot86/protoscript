@@ -53,19 +53,26 @@ def load_config(configFileName):
 def init_config(configFileName):
     config = ConfigParser.RawConfigParser()
     # When adding sections or items, add them in the reverse order of
-    # how you want them to be displayed in the actual file.
-    # In addition, please note that using RawConfigParser's and the raw
+    # how you want them to be displayed in the actual file.  In
+    # addition, please note that using RawConfigParser's and the raw
     # mode of ConfigParser's respective set functions, you can assign
     # non-string values to keys internally, but will receive an error
     # when attempting to write to a file or when you get it in non-raw
-    # mode. SafeConfigParser does not allow such assignments to take place.
+    # mode. SafeConfigParser does not allow such assignments to take
+    # place.
     config.add_section('Trigger')
-    config.set('Trigger', '# Set the trigger level','')
+
     config.set('Trigger', 'level', '1')
-    # Writing our configuration file to 'example.cfg'
-    module_logger.debug('Initializing configuration file ' + configFileName)
-    with open(configFileName, 'wb') as outfile:
+    # Writing our configuration file
+    module_logger.debug('Initializing configuration file ' + 
+                        configFileName)
+    with open(configFileName, 'w') as outfile:
         outfile.write('# Some junk comment\n')
+        config.write(outfile)
+    config.add_section('Another')
+    config.set('Another','crap','1')
+    with open(configFileName, 'a') as outfile:
+        outfile.write('# Some more comments\n')
         config.write(outfile)
     return config
 
