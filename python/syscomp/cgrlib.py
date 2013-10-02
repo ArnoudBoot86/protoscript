@@ -12,6 +12,7 @@ import sys # For sys.exit()
 import collections # For rotatable lists
 
 import ConfigParser # For writing and reading the config file
+from configobj import ConfigObj # For writing and reading config file
 
 # File used to hold the calibration constant dictionary
 calfile = 'cgrcal.pkl'
@@ -27,54 +28,6 @@ from serial.tools.list_ports import comports
 
 
 cmdterm = '\r\n' # Terminates each command
-
-# load_config(configuration file name)
-#
-# Open the configuration file (if it exists) and return the
-# configuration object.
-def load_config(configFileName):
-    config = ConfigParser.RawConfigParser()
-    try:
-        config.readfp(open(configFileName))
-        return config
-    except IOError:
-        module_logger.warning('Did not find configuration file ' +
-                              configFileName)
-        config = init_config(configFileName)
-        return config
-
-
-
-
-# init_config(configuration file name)
-#
-# Initialize the configuration file.  The file name should be
-# specified by the user in the application code.
-def init_config(configFileName):
-    config = ConfigParser.RawConfigParser()
-    # When adding sections or items, add them in the reverse order of
-    # how you want them to be displayed in the actual file.  In
-    # addition, please note that using RawConfigParser's and the raw
-    # mode of ConfigParser's respective set functions, you can assign
-    # non-string values to keys internally, but will receive an error
-    # when attempting to write to a file or when you get it in non-raw
-    # mode. SafeConfigParser does not allow such assignments to take
-    # place.
-    config.add_section('Trigger')
-
-    config.set('Trigger', 'level', '1')
-    # Writing our configuration file
-    module_logger.debug('Initializing configuration file ' + 
-                        configFileName)
-    with open(configFileName, 'w') as outfile:
-        outfile.write('# Some junk comment\n')
-        config.write(outfile)
-    config.add_section('Another')
-    config.set('Another','crap','1')
-    with open(configFileName, 'a') as outfile:
-        outfile.write('# Some more comments\n')
-        config.write(outfile)
-    return config
 
 
 # write_cal(offlist)

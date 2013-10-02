@@ -52,8 +52,6 @@ logger.addHandler(ch)
 fh.setFormatter(plain_formatter)
 logger.addHandler(fh)
 
-# Configuration file
-configfile = 'cgr.cfg'
 
 
 
@@ -74,7 +72,7 @@ Gnuplot.GnuplotOpts.prefer_fifo_data = 0
 
 #--------------------------- Begin configure --------------------------
 
-configFile = 'cgr.cfg' # The configuration file
+
 triglev = 1 # Volts -- the trigger level
 trigsrc = 1 # 0: Channel A, 1: Channel B, 2: External
 trigpol = 1 # 0: Rising,    1: Falling
@@ -82,12 +80,47 @@ trigpts = 512 # The number of points to capture after trigger
 fsamp_req = 100e3 # Hz -- the requested sample rate
 cha_gain = 0 # 0: 1x gain ( +/-25V max ), 1: 10x gain ( +/-2.5V max )
 chb_gain = 0 # 0: 1x gain ( +/-25V max ), 1: 10x gain ( +/-2.5V max )
+# Configuration file
+configfile = 'cgr_capture.cfg' # The configuration file
 
 #---------------------- End configure ---------------------
 
 cmdterm = '\r\n' # Terminates each command
 
+#------------------------ Configuration file --------------------------
+from configobj import ConfigObj # For writing and reading config file
 
+# load_config(configuration file name)
+#
+# Open the configuration file (if it exists) and return the
+# configuration object.  If the file doesn't exist, call the init
+# function to create it.
+def load_config(configFileName):
+    try:
+        config = ConfigObj(configFileName,file_error=True)
+        return config
+    except IOError:
+        logger.warning('Did not find configuration file ' +
+                       configFileName)
+        config = init_config(configFileName)
+        return config
+
+# init_config(configuration file name)
+#
+# Initialize the configuration file.  The file name should be
+# specified by the user in the application code.  This function is
+# unique to the application, so it's not really a library function.
+def init_config(configFileName):
+    config = ConfigObj()
+    config.filename = configFileName
+    config['Trigger'] = {}
+    config['Trigger']['level'] = 1.025
+
+    # Writing our configuration file
+    logger.debug('Initializing configuration file ' + 
+                 configFileName)
+    config.write()
+    return config
 
 
 # plotdata()
@@ -131,8 +164,8 @@ def plotdata(timedata, voltdata, trigdict):
 
         
 def main():
-    config = cgrlib.load_config(configFile)
-    ctriglevel = config.getfloat('Trigger','level')
+    config = load_config(configfile)
+    ctriglevel = config['Trigger']['level']
     print ('Trigger level from configuration is ' + str(ctriglevel))
     caldict = cgrlib.load_cal()
     trigdict = cgrlib.get_trig_dict( trigsrc, triglev, trigpol, trigpts)
