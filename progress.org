@@ -42,5 +42,5 @@
      configuration file object is returned to the application code.
      So this object can be passed to a library function again, and the
      library function can return a populated trigger dictionary.
-** TODO Switch configuration handling to configobj
+** DONE Switch configuration handling to configobj
    - http://www.voidspace.org.uk/python/configobj.html

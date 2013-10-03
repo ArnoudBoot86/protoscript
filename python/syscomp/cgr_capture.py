@@ -113,6 +113,8 @@ def load_config(configFileName):
 def init_config(configFileName):
     config = ConfigObj()
     config.filename = configFileName
+    config.initial_comment = ['This is the first initial comment line',
+                              'second comment line']
     config['Trigger'] = {}
     config['Trigger']['level'] = 1.025
 
@@ -165,10 +167,11 @@ def plotdata(timedata, voltdata, trigdict):
         
 def main():
     config = load_config(configfile)
-    ctriglevel = config['Trigger']['level']
-    print ('Trigger level from configuration is ' + str(ctriglevel))
     caldict = cgrlib.load_cal()
-    trigdict = cgrlib.get_trig_dict( trigsrc, triglev, trigpol, trigpts)
+    trigdict = cgrlib.get_trig_dict( trigsrc, 
+                                     config['Trigger']['level']
+                                     , trigpol, trigpts)
+    print trigdict
     sys.exit() # For running without cgr
     cgr = cgrlib.get_cgr()
     gainlist = cgrlib.set_hw_gain(cgr, [cha_gain,chb_gain])
