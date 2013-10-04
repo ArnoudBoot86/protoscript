@@ -114,9 +114,16 @@ def init_config(configFileName):
     config = ConfigObj()
     config.filename = configFileName
     config.initial_comment = ['This is the first initial comment line',
-                              'second comment line']
+                              'second comment line',
+                              ' ']
+    config.comments = {}
+    config.inline_comments = {}
     config['Trigger'] = {}
+    config['Trigger'].comments = {}
+    config.comments['Trigger'] = ['Comment about trigger section']
     config['Trigger']['level'] = 1.025
+    config.inline_comments['Trigger'] = 'Inline comment about trigger section'
+    config['Trigger'].comments['level'] = ['Comment about level']
 
     # Writing our configuration file
     logger.debug('Initializing configuration file ' + 
