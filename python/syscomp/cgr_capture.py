@@ -60,7 +60,7 @@ logger.addHandler(fh)
 import cgrlib
 
 #------------------ Configure plotting with gnuplot -------------------
-import logging
+
 # For the Gnuplot module
 from numpy import * # For gnuplot.py
 import Gnuplot, Gnuplot.funcutils # For gnuplot.py
@@ -68,6 +68,8 @@ import Gnuplot, Gnuplot.funcutils # For gnuplot.py
 # Use this option to turn off fifo if you get warnings like:
 # line 0: warning: Skipping unreadable file "/tmp/tmpakexra.gnuplot/fifo"
 Gnuplot.GnuplotOpts.prefer_fifo_data = 0
+
+
 
 
 #--------------------------- Begin configure --------------------------
@@ -105,6 +107,8 @@ def load_config(configFileName):
         config = init_config(configFileName)
         return config
 
+
+
 # init_config(configuration file name)
 #
 # Initialize the configuration file.  The file name should be
@@ -113,17 +117,27 @@ def load_config(configFileName):
 def init_config(configFileName):
     config = ConfigObj()
     config.filename = configFileName
-    config.initial_comment = ['This is the first initial comment line',
-                              'second comment line',
-                              ' ']
+    config.initial_comment = [
+        'Configuration file for cgr_capture.py',
+        'It can have more than one line',
+        ' ']
     config.comments = {}
     config.inline_comments = {}
+    
     config['Trigger'] = {}
     config['Trigger'].comments = {}
-    config.comments['Trigger'] = ['Comment about trigger section']
+    config.comments['Trigger'] = ['The trigger section']
     config['Trigger']['level'] = 1.025
     config.inline_comments['Trigger'] = 'Inline comment about trigger section'
-    config['Trigger'].comments['level'] = ['Comment about level']
+    config['Trigger'].comments['level'] = ['The trigger level (Volts)']
+    config['Trigger']['source'] = 1
+    config['Trigger'].comments['source'] = [
+        ' ',
+        'Trigger source values:',
+        '0 -- channel A',
+        '1 -- channel B',
+        '2 -- external'
+    ]
 
     # Writing our configuration file
     logger.debug('Initializing configuration file ' + 
@@ -175,7 +189,7 @@ def plotdata(timedata, voltdata, trigdict):
 def main():
     config = load_config(configfile)
     caldict = cgrlib.load_cal()
-    trigdict = cgrlib.get_trig_dict( trigsrc, 
+    trigdict = cgrlib.get_trig_dict( config['Trigger']['source'], 
                                      config['Trigger']['level']
                                      , trigpol, trigpts)
     print trigdict
