@@ -74,11 +74,6 @@ Gnuplot.GnuplotOpts.prefer_fifo_data = 0
 
 #--------------------------- Begin configure --------------------------
 
-
-triglev = 1 # Volts -- the trigger level
-trigsrc = 1 # 0: Channel A, 1: Channel B, 2: External
-trigpol = 1 # 0: Rising,    1: Falling
-trigpts = 512 # The number of points to capture after trigger
 fsamp_req = 100e3 # Hz -- the requested sample rate
 cha_gain = 0 # 0: 1x gain ( +/-25V max ), 1: 10x gain ( +/-2.5V max )
 chb_gain = 0 # 0: 1x gain ( +/-25V max ), 1: 10x gain ( +/-2.5V max )
@@ -128,17 +123,57 @@ def init_config(configFileName):
     config['Trigger'].comments = {}
     config.comments['Trigger'] = ['The trigger section']
     config['Trigger']['level'] = 1.025
-    config.inline_comments['Trigger'] = 'Inline comment about trigger section'
+    # config.inline_comments['Trigger'] = 'Inline comment about trigger section'
     config['Trigger'].comments['level'] = ['The trigger level (Volts)']
+    
+    # Trigger source
     config['Trigger']['source'] = 1
     config['Trigger'].comments['source'] = [
         ' ',
-        'Trigger source values:',
+        'Trigger source settings:',
         '0 -- channel A',
         '1 -- channel B',
         '2 -- external'
     ]
+    
+    # Trigger polarity
+    config['Trigger']['polarity'] = 0
+    config['Trigger'].comments['polarity'] = [
+        ' ',
+        'Trigger polarity settings:',
+        '0 -- Rising edge',
+        '1 -- Falling edge'
+    ]
 
+    # Points to acquire after trigger
+    config['Trigger']['points'] = 512
+    config['Trigger'].comments['points'] = [
+        ' ',
+        'Points to acqure after trigger',
+        'The unit always acquires 1024 points from each channel.  This',
+        'number sets the number of points to acquire after a trigger.',
+        'So a value of 100 would mean that 924 points are acquired before',
+        'the trigger, and 100 are acquired after.',
+        'Range: 0, 1, 2, ... , 1024'
+    ]
+    
+    config['Inputs'] = {}
+    config['Inputs'].comments = {}
+    config.comments['Inputs'] = [
+        ' ',
+        'Input configuration'
+    ]
+    # Probe setting
+    config['Inputs']['Aprobe'] = 0
+    config['Inputs']['Bprobe'] = 0
+    config['Inputs'].comments['Aprobe'] = [
+        ' ',
+        'Probe setting:',
+        '0 -- 1x probe',
+        '1 -- 10x probe'
+    ]
+
+    
     # Writing our configuration file
     logger.debug('Initializing configuration file ' + 
                  configFileName)
@@ -190,12 +225,17 @@ def main():
     config = load_config(configfile)
     caldict = cgrlib.load_cal()
     trigdict = cgrlib.get_trig_dict( config['Trigger']['source'], 
-                                     config['Trigger']['level']
-                                     , trigpol, trigpts)
-    print trigdict
-    sys.exit() # For running without cgr
+                                     config['Trigger']['level'], 
+                                     config['Trigger']['polarity'],
+                                     config['Trigger']['points']
+    )
     cgr = cgrlib.get_cgr()
-    gainlist = cgrlib.set_hw_gain(cgr, [cha_gain,chb_gain])
+    gainlist = cgrlib.set_hw_gain(cgr, [config['Inputs']['Aprobe'],
+                                        config['Inputs']['Bprobe']
+                                    ]
+    )
+    print gainlist
+    sys.exit() # For running without cgr
 
     cgrlib.set_trig_level(cgr, caldict, gainlist, trigsrc, triglev)
     cgrlib.set_trig_samples(cgr,trigpts)

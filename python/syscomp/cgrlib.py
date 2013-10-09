@@ -105,7 +105,9 @@ def get_cgr():
         except serial.serialutil.SerialException:
             module_logger.info('Could not open ' + serport[0])
             if serport == portlist[-1]: # This is the last port
-                testlib.failmessage('Except Did not find any CGR-101 units')
+                testlib.failmessage(
+                    'Exception: Did not find any CGR-101 units'
+                )
                 sys.exit()
 
 def flush_cgr(handle):
