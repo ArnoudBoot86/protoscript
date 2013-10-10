@@ -75,8 +75,7 @@ Gnuplot.GnuplotOpts.prefer_fifo_data = 0
 #--------------------------- Begin configure --------------------------
 
 fsamp_req = 100e3 # Hz -- the requested sample rate
-cha_gain = 0 # 0: 1x gain ( +/-25V max ), 1: 10x gain ( +/-2.5V max )
-chb_gain = 0 # 0: 1x gain ( +/-25V max ), 1: 10x gain ( +/-2.5V max )
+
 # Configuration file
 configfile = 'cgr_capture.cfg' # The configuration file
 
@@ -161,7 +160,9 @@ def init_config(configFileName):
     config['Inputs'].comments = {}
     config.comments['Inputs'] = [
         ' ',
-        'Input configuration'
+        'Input configuration.  The unit is limited to measuring +/-25Vpp',
+        'at its inputs with the 1x probe setting, and at the end of a 10x',
+        'probe with the 10x probe setting.'
     ]
     # Probe setting
     config['Inputs']['Aprobe'] = 0

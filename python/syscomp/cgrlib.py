@@ -7,7 +7,6 @@ import serial   # Provides serial class Serial
 import time     # For making pauses
 import binascii # For hex string conversion
 import pickle # For writing and reading calibration data
-import testlib # For colored status messages
 import sys # For sys.exit()
 import collections # For rotatable lists
 
@@ -105,19 +104,15 @@ def get_cgr():
         except serial.serialutil.SerialException:
             module_logger.info('Could not open ' + serport[0])
             if serport == portlist[-1]: # This is the last port
-                testlib.failmessage(
-                    'Exception: Did not find any CGR-101 units'
-                )
+                module_logger.error('Did not find any CGR-101 units')
                 sys.exit()
 
 def flush_cgr(handle):
     readstr = 'junk'
     while (len(readstr) > 0):
         readstr = handle.read(100)
-        testlib.infomessage('Flushed ' + str(len(readstr)) + ' characters')
+        module_logger.info('Flushed ' + str(len(readstr)) + ' characters')
 
-    
-    
 
 # sendcmd(handle,command)
 #    
@@ -449,7 +444,7 @@ def force_trigger(handle, ctrl_reg):
     handle.open()
     sendcmd(handle,'S G') # Start the capture
     sendcmd(handle,('S R ' + str(new_reg))) # Ready for forced trigger
-    testlib.infomessage('Forcing trigger')
+    module_logger.info('Forcing trigger')
     sendcmd(handle,('S D 5' )) # Force the trigger
     sendcmd(handle,('S D 4' )) # Return to normal triggering
     # Put the control register back the way it was

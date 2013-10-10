@@ -4,6 +4,8 @@
 * ------------------------ TODO list ----------------------------
 * Work on CGR code
 ** TODO Move all settings to configuration file
+** TODO Add auto trigger option to configuration
+   - This will probably require an entry to the trigdict :-(
 ** TODO Make option to force trigger while waiting for trigger
    - This will require the curses module.  That will require some learning.
 ** DONE Pull out old testlib messages
@@ -34,13 +36,15 @@
 ** DONE Draw crosshairs at the trigger point
 ** DONE Get milliseconds out of logger time string
 ** DONE Move trigger level x3into a separate config file
-** TODO Make a function that loads a configuration file
-   - Or makes a new one if one is not found.
 ** TODO Calibration coefficients should go in the configuration file
-** TODO Make function to fill trigger dictionary
-   - The configuration file is read using the libary function, and the
-     configuration file object is returned to the application code.
-     So this object can be passed to a library function again, and the
-     library function can return a populated trigger dictionary.
 ** DONE Switch configuration handling to configobj
    - http://www.voidspace.org.uk/python/configobj.html
+** TODO Create acquisition configuration section
+*** Sample rate setting
+    - Note that the unit always acquires 1024 samples from each
+      channel.  So the sample rate is tied to the acquisition time.  I
+      like being able to set the sample rate though, so make this the
+      setting.
+*** Averages
+    - Note that averaging doesn't make much sense without a trigger.
+      That doesn't mean I won't do it.
