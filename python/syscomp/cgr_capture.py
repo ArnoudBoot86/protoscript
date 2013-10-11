@@ -132,7 +132,8 @@ def init_config(configFileName):
         'Trigger source settings:',
         '0 -- channel A',
         '1 -- channel B',
-        '2 -- external'
+        '2 -- external',
+        '3 -- internal (Triggers generated regardless of any level)'
     ]
     
     # Trigger polarity
@@ -247,7 +248,6 @@ def main():
                        '{:0.3f} kHz '.format(float(fsamp_req)/1000) +
                        'adjusted to ' + 
                        '{:0.3f} kHz '.format(float(fsamp_act)/1000))
-
 
     # Wait for trigger, then return uncalibrated data
     [ctrl_reg, fsamp_act] = cgrlib.set_ctrl_reg(cgr, fsamp_req, 

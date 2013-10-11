@@ -3,9 +3,15 @@
 ** <2013-09-01 Sun> Created this project
 * ------------------------ TODO list ----------------------------
 * Work on CGR code
+** TODO cgrlib.set_ctrl_reg needs to take trigdict
+** TODO cgrlib.set_trig_samples needs to take trigdict
+** TODO cgrlib.set_trig_level needs to take trigdict
+   - Right now it takes the individual trigsrc and triglev
+** TODO cgrlib.set_trig_samples needs to take trigdict
 ** TODO Move all settings to configuration file
-** TODO Add auto trigger option to configuration
-   - This will probably require an entry to the trigdict :-(
+** TODO Add support for internal trigger option
+   - Internal trigger should force a trigger as often as is possible.
+   - Still observe the trigpts setting, because who knows?
 ** TODO Make option to force trigger while waiting for trigger
    - This will require the curses module.  That will require some learning.
 ** DONE Pull out old testlib messages
