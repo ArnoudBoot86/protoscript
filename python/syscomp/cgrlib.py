@@ -220,28 +220,29 @@ def get_eeprom_offlist(handle):
 
 
 
-# set_trig_samples(handle,postpoints)
+# set_trig_samples(handle,trigdict)
 #
 # Sets the number of samples to take after a trigger.  The unit always
 # takes 1024 samples.  Setting the post-trigger samples to a value
 # less than 1024 means that samples before the trigger will be saved
 # instead.
 #
-# Arguments: Serial object representing CGR-101,
-#            Number of points to acquire after the trigger
-def set_trig_samples(handle,postpoints):
+# Arguments: 
+#   handle -- serial object representing the CGR-101
+#   trigdict -- see get_trig_dict function
+def set_trig_samples(handle,trigdict):
     handle.open()
     totsamp = 1024
-    if (postpoints <= totsamp):
-        setval_h = int((postpoints%(2**16))/(2**8))
-        setval_l = int((postpoints%(2**8)))
+    if (trigdict['trigpts'] <= totsamp):
+        setval_h = int((trigdict['trigpts']%(2**16))/(2**8))
+        setval_l = int((trigdict['trigpts']%(2**8)))
     else:
         setval_h = int((500%(2**16))/(2**8))
         setval_l = int((500%(2**8)))
     sendcmd(handle,('S C ' + str(setval_h) + ' ' + str(setval_l)))
     handle.close()
     
-# set_ctrl_reg( handle, fsamp, trigsrc, trigpol )
+# set_ctrl_reg( handle, fsamp, trigdict )
 #
 # Sets the CGR-101's control register.
 #
@@ -249,29 +250,24 @@ def set_trig_samples(handle,postpoints):
 #  handle -- serial object representing the CGR-101
 #  fsamp_req -- requested sample rate in Hz.  The actual rate will be
 #               determined using those allowed for the unit.
-#  trigsrc -- Which connector the trigger comes in on.
-#             0: Channel A
-#             1: Channel B
-#             2: External trigger pin
-#  trigpol -- Which transition the trigger will watch for
-#             0: Rising edge
-#             1: Falling edge
+#  trigdict -- see get_trig_dict function
 #
-# Returns the register value
-def set_ctrl_reg(handle,fsamp_req,trigsrc,trigpol):
+# Returns: 
+#   The new control register value
+def set_ctrl_reg(handle,fsamp_req,trigdict):
     reg_value = 0
     [reg_value,fsamp_act] = get_samplebits(fsamp_req) # Set sample rate
     # Configure the trigger source
-    if trigsrc == 0: # Trigger on channel A
+    if trigdict['trigsrc'] == 0: # Trigger on channel A
         reg_value += (0 << 4)
-    elif trigsrc == 1: # Trigger on channel B
+    elif trigdict['trigsrc'] == 1: # Trigger on channel B
         reg_value += (1 << 4)
-    elif trigsrc == 2: # Trigger on external input
+    elif trigdict['trigsrc'] == 2: # Trigger on external input
         reg_value += (1 << 6)
     # Configure the trigger polarity
-    if trigpol == 0: # Rising edge
+    if trigdict['trigpol'] == 0: # Rising edge
         reg_value += (0 << 5)
-    elif trigpol == 1: # Falling edge
+    elif trigdict['trigpol'] == 1: # Falling edge
         reg_value += (1 << 5)
     handle.open()
     sendcmd(handle,('S R ' + str(reg_value)))
@@ -335,7 +331,7 @@ def get_trig_dict( trigsrc, triglev, trigpol, trigpts ):
 
 
 
-# set_trig_level( handle, caldict, gainlist, trigsrc, triglev )
+# set_trig_level( handle, caldict, gainlist, trigdict)
 #
 # Sets the trigger voltage.
 #
@@ -343,25 +339,25 @@ def get_trig_dict( trigsrc, triglev, trigpol, trigpts ):
 #  handle -- serial object representing the CGR-101
 #  caldict -- dictionary of slope and offset values
 #  gainlist -- [cha_gain, chb_gain]
-#  trigsrc -- Which connector the trigger comes in on.
-#             0: Channel A
-#             1: Channel B
-#             2: External trigger pin
-#  triglev -- The trigger level in volts
-def set_trig_level(handle, caldict, gainlist, trigsrc, triglev):
+#  trigdict -- see get_trig_dict function
+def set_trig_level(handle, caldict, gainlist, trigdict):
     handle.open()
-    if (gainlist[0] == 0 and trigsrc == 0): # Channel A gain is 1x
+    if (gainlist[0] == 0 and trigdict['trigsrc'] == 0): 
+        # Channel A gain is 1x
         trigcts = (511 - caldict['chA_1x_offset'] - 
-                   float(triglev)/caldict['chA_1x_gain'])
-    elif (gainlist[0] == 1 and trigsrc == 0): # Channel A gain is 10x
+                   float(trigdict['triglev'])/caldict['chA_1x_gain'])
+    elif (gainlist[0] == 1 and trigdict['trigsrc'] == 0): 
+        # Channel A gain is 10x
         trigcts = (511 - caldict['chA_10x_offset'] - 
-                   float(triglev)/caldict['chA_10x_gain'])
-    elif (gainlist[1] == 0 and trigsrc == 1): # Channel B gain is 1x
+                   float(trigdict['triglev'])/caldict['chA_10x_gain'])
+    elif (gainlist[1] == 0 and trigdict['trigsrc'] == 1): 
+        # Channel B gain is 1x
         trigcts = (511 - caldict['chB_1x_offset'] - 
-                   float(triglev)/caldict['chB_1x_gain'])
-    elif (gainlist[1] == 1 and trigsrc == 1): # Channel B gain is 10x
+                   float(trigdict['triglev'])/caldict['chB_1x_gain'])
+    elif (gainlist[1] == 1 and trigdict['trigsrc'] == 1): 
+        # Channel B gain is 10x
         trigcts = (511 - caldict['chB_10x_offset'] - 
-                   float(triglev)/caldict['chB_10x_gain'])
+                   float(trigdict['triglev'])/caldict['chB_10x_gain'])
     else:
         trigcts = 511 # 0V
     trigcts_l = int(trigcts%(2**8))
@@ -383,7 +379,8 @@ def set_trig_level(handle, caldict, gainlist, trigsrc, triglev):
 def get_uncal_triggered_data(handle, trigdict):
     handle.open()
     sendcmd(handle,'S G') # Start the capture
-    sys.stdout.write('Waiting for ' + '{:0.1f}'.format(trigdict['triglev']) +
+    sys.stdout.write('Waiting for ' + 
+                     '{:0.1f}'.format(trigdict['triglev']) +
                      'V trigger at ')
     if trigdict['trigsrc'] == 0:
         print('input A...')

@@ -226,23 +226,22 @@ def plotdata(timedata, voltdata, trigdict):
 def main():
     config = load_config(configfile)
     caldict = cgrlib.load_cal()
-    trigdict = cgrlib.get_trig_dict( config['Trigger']['source'], 
-                                     config['Trigger']['level'], 
-                                     config['Trigger']['polarity'],
-                                     config['Trigger']['points']
+    trigdict = cgrlib.get_trig_dict( int(config['Trigger']['source']), 
+                                     float(config['Trigger']['level']), 
+                                     int(config['Trigger']['polarity']),
+                                     int(config['Trigger']['points'])
     )
     cgr = cgrlib.get_cgr()
-    gainlist = cgrlib.set_hw_gain(cgr, [config['Inputs']['Aprobe'],
-                                        config['Inputs']['Bprobe']
+    gainlist = cgrlib.set_hw_gain(cgr, [int(config['Inputs']['Aprobe']),
+                                        int(config['Inputs']['Bprobe'])
                                     ]
     )
     print gainlist
-    sys.exit() # For running without cgr
+    # sys.exit() # For running without cgr
 
-    cgrlib.set_trig_level(cgr, caldict, gainlist, trigsrc, triglev)
-    cgrlib.set_trig_samples(cgr,trigpts)
-    [ctrl_reg, fsamp_act] = cgrlib.set_ctrl_reg(cgr, fsamp_req, 
-                                                trigsrc, trigpol)
+    cgrlib.set_trig_level(cgr, caldict, gainlist, trigdict)
+    cgrlib.set_trig_samples(cgr,trigdict)
+    [ctrl_reg, fsamp_act] = cgrlib.set_ctrl_reg(cgr, fsamp_req, trigdict)
     if not (fsamp_act == fsamp_req):
         logger.warning('Requested sample frequency ' + 
                        '{:0.3f} kHz '.format(float(fsamp_req)/1000) +
@@ -250,8 +249,7 @@ def main():
                        '{:0.3f} kHz '.format(float(fsamp_act)/1000))
 
     # Wait for trigger, then return uncalibrated data
-    [ctrl_reg, fsamp_act] = cgrlib.set_ctrl_reg(cgr, fsamp_req, 
-                                                trigsrc, trigpol)
+    [ctrl_reg, fsamp_act] = cgrlib.set_ctrl_reg(cgr, fsamp_req, trigdict)
     tracedata = cgrlib.get_uncal_triggered_data(cgr,trigdict)
 
     # Apply calibration

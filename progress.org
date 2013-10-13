@@ -3,11 +3,16 @@
 ** <2013-09-01 Sun> Created this project
 * ------------------------ TODO list ----------------------------
 * Work on CGR code
-** TODO cgrlib.set_ctrl_reg needs to take trigdict
-** TODO cgrlib.set_trig_samples needs to take trigdict
-** TODO cgrlib.set_trig_level needs to take trigdict
+** DONE cgrlib.set_ctrl_reg needs to take trigdict
+*** Trigdict members
+    1. trigsrc
+    2. triglev
+    3. trigpol
+    4. trigpts
+** DONE cgrlib.set_trig_samples needs to take trigdict
+** DONE cgrlib.set_trig_level needs to take trigdict
    - Right now it takes the individual trigsrc and triglev
-** TODO cgrlib.set_trig_samples needs to take trigdict
+** DONE cgrlib.set_trig_samples needs to take trigdict
 ** TODO Move all settings to configuration file
 ** TODO Add support for internal trigger option
    - Internal trigger should force a trigger as often as is possible.
