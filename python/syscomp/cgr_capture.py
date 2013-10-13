@@ -186,6 +186,12 @@ def init_config(configFileName):
         '2MHz -- it does not move an anti-alias filter depending on the',
         'sample rate.'
     ]
+    # Averages
+    config['Acquire']['averages'] = 1
+    config['Acquire'].comments['averages'] = [
+        ' ',
+        'Number of acquisitions to average'
+    ]
 
     
     # Writing our configuration file

@@ -3,6 +3,9 @@
 ** <2013-09-01 Sun> Created this project
 * ------------------------ TODO list ----------------------------
 * Work on CGR code
+** TODO Add support for averaging
+   - Plot the resulting average after each acquisition.
+   - averages is already a config parameter
 ** DONE cgrlib.set_ctrl_reg needs to take trigdict
 *** Trigdict members
     1. trigsrc
@@ -50,7 +53,7 @@
 ** TODO Calibration coefficients should go in the configuration file
 ** DONE Switch configuration handling to configobj
    - http://www.voidspace.org.uk/python/configobj.html
-** TODO Create acquisition configuration section
+** DONE Create acquisition configuration section
 *** Sample rate setting
     - Note that the unit always acquires 1024 samples from each
       channel.  So the sample rate is tied to the acquisition time.  I
