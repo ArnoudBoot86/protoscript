@@ -72,15 +72,7 @@ Gnuplot.GnuplotOpts.prefer_fifo_data = 0
 
 
 
-#--------------------------- Begin configure --------------------------
-
-fsamp_req = 100e3 # Hz -- the requested sample rate
-
-# Configuration file
 configfile = 'cgr_capture.cfg' # The configuration file
-
-#---------------------- End configure ---------------------
-
 cmdterm = '\r\n' # Terminates each command
 
 #------------------------ Configuration file --------------------------
@@ -113,11 +105,11 @@ def init_config(configFileName):
     config.filename = configFileName
     config.initial_comment = [
         'Configuration file for cgr_capture.py',
-        'It can have more than one line',
         ' ']
     config.comments = {}
     config.inline_comments = {}
     
+    #------------------------- Trigger section ------------------------
     config['Trigger'] = {}
     config['Trigger'].comments = {}
     config.comments['Trigger'] = ['The trigger section']
@@ -157,6 +149,7 @@ def init_config(configFileName):
         'Range: 0, 1, 2, ... , 1024'
     ]
     
+    #-------------------------- Inputs section ------------------------
     config['Inputs'] = {}
     config['Inputs'].comments = {}
     config.comments['Inputs'] = [
@@ -173,6 +166,25 @@ def init_config(configFileName):
         'Probe setting:',
         '0 -- 1x probe',
         '1 -- 10x probe'
+    ]
+
+    #------------------------- Acquire section ------------------------
+    config['Acquire'] = {}
+    config['Acquire'].comments = {}
+    config.comments['Acquire'] = [
+        ' ',
+        'Acquisition configuration.'
+    ]
+    # Sample rate
+    config['Acquire']['rate'] = 100000
+    config['Acquire'].comments['rate'] = [
+        ' ',
+        'Sample rate (Hz)',
+        'Minimum: 610.35',
+        'Maximum: 20000000 (20Msps)',
+        'Keep in mind that the cgr-101 has a fixed analog bandwidth of',
+        '2MHz -- it does not move an anti-alias filter depending on the',
+        'sample rate.'
     ]
 
     
@@ -236,21 +248,26 @@ def main():
                                         int(config['Inputs']['Bprobe'])
                                     ]
     )
-    print gainlist
     # sys.exit() # For running without cgr
 
     cgrlib.set_trig_level(cgr, caldict, gainlist, trigdict)
     cgrlib.set_trig_samples(cgr,trigdict)
-    [ctrl_reg, fsamp_act] = cgrlib.set_ctrl_reg(cgr, fsamp_req, trigdict)
-    if not (fsamp_act == fsamp_req):
+    [ctrl_reg, fsamp_act] = cgrlib.set_ctrl_reg(cgr,
+                                                float(config['Acquire']['rate']), 
+                                                trigdict)
+    if not (fsamp_act == float(config['Acquire']['rate'])):
         logger.warning('Requested sample frequency ' + 
-                       '{:0.3f} kHz '.format(float(fsamp_req)/1000) +
+                       '{:0.3f} kHz '.format(float(config['Acquire']['rate'])/1000) +
                        'adjusted to ' + 
                        '{:0.3f} kHz '.format(float(fsamp_act)/1000))
 
     # Wait for trigger, then return uncalibrated data
-    [ctrl_reg, fsamp_act] = cgrlib.set_ctrl_reg(cgr, fsamp_req, trigdict)
-    tracedata = cgrlib.get_uncal_triggered_data(cgr,trigdict)
+    if trigdict['trigsrc'] == 3:
+        # Internal trigger
+        tracedata = cgrlib.get_uncal_forced_data(cgr,ctrl_reg)
+    elif trigdict['trigsrc'] < 3:
+        # Trigger on a voltage present at some input
+        tracedata = cgrlib.get_uncal_triggered_data(cgr,trigdict)
 
     # Apply calibration
     voltdata = cgrlib.get_cal_data(caldict,gainlist,[tracedata[0],tracedata[1]])

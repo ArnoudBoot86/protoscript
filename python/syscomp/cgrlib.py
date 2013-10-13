@@ -316,6 +316,7 @@ def set_hw_gain(handle,gainlist):
 #             0: Channel A
 #             1: Channel B
 #             2: External
+#             3: Internal
 #  triglev -- Trigger voltage (floating point volts)
 #  trigpol -- Trigger slope
 #             0: Rising
@@ -402,6 +403,8 @@ def get_uncal_triggered_data(handle, trigdict):
     module_logger.debug('Got ' + str(len(hexdata)/2) + ' bytes')
     handle.close()
     bothdata = [] # Alternating data from both channels
+    adecdata = [] # A channel data
+    bdecdata = [] # B channel data 
     # Data returned from the unit has alternating words of channel A
     # and channel B data.  Each word is 16 bits (four hex characters)
     for samplenum in range(2048):
@@ -411,11 +414,8 @@ def get_uncal_triggered_data(handle, trigdict):
     adecdata.rotate(1024-lastpoint)
     bdecdata = collections.deque(bothdata[1::2])
     bdecdata.rotate(1024-lastpoint)
-    
     return [list(adecdata),list(bdecdata)]
 
-
-    
 
 # reset( handle )
 # Perform a hardware reset
@@ -443,7 +443,6 @@ def force_trigger(handle, ctrl_reg):
     sendcmd(handle,('S R ' + str(new_reg))) # Ready for forced trigger
     module_logger.info('Forcing trigger')
     sendcmd(handle,('S D 5' )) # Force the trigger
-    sendcmd(handle,('S D 4' )) # Return to normal triggering
     # Put the control register back the way it was
     sendcmd(handle,('S R ' + str(old_reg)))
     handle.close()
@@ -464,18 +463,24 @@ def get_uncal_forced_data(handle,ctrl_reg):
     sendcmd(handle,'S B') # Query the data
     retdata = handle.read(5000)
     hexdata = binascii.hexlify(retdata)[2:]
+    module_logger.debug('Got ' + str(len(hexdata)/2) + ' bytes')
     handle.close()
+    # There is no last capture location for forced triggers. Setting
+    # lastpoint to zero doesn't rotate the data.
+    lastpoint = 0
     bothdata = [] # Alternating data from both channels
     adecdata = [] # A channel data
     bdecdata = [] # B channel data 
     # Data returned from the unit has alternating words of channel A
-    # and channel B data.  Each word is 16 bits (two hex characters)
-    for samplenum in range(1024):
+    # and channel B data.  Each word is 16 bits (four hex characters)
+    for samplenum in range(2048):
         sampleval = int(hexdata[(samplenum*4):(samplenum*4 + 4)],16)
         bothdata.append(sampleval)
-    adecdata = bothdata[0::2]
-    bdecdata = bothdata[1::2]
-    return [adecdata,bdecdata]
+    adecdata = collections.deque(bothdata[0::2])
+    adecdata.rotate(1024-lastpoint)
+    bdecdata = collections.deque(bothdata[1::2])
+    bdecdata.rotate(1024-lastpoint)
+    return [list(adecdata),list(bdecdata)]
 
 
 # get_cal_data(caldict,gainlist,rawdata)

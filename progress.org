@@ -13,7 +13,7 @@
 ** DONE cgrlib.set_trig_level needs to take trigdict
    - Right now it takes the individual trigsrc and triglev
 ** DONE cgrlib.set_trig_samples needs to take trigdict
-** TODO Move all settings to configuration file
+** DONE Move all settings to configuration file
 ** TODO Add support for internal trigger option
    - Internal trigger should force a trigger as often as is possible.
    - Still observe the trigpts setting, because who knows?
