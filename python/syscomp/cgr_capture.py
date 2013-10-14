@@ -268,16 +268,26 @@ def main():
                        '{:0.3f} kHz '.format(float(fsamp_act)/1000))
 
     # Wait for trigger, then return uncalibrated data
-    if trigdict['trigsrc'] == 3:
-        # Internal trigger
-        tracedata = cgrlib.get_uncal_forced_data(cgr,ctrl_reg)
-    elif trigdict['trigsrc'] < 3:
-        # Trigger on a voltage present at some input
-        tracedata = cgrlib.get_uncal_triggered_data(cgr,trigdict)
+    
+    for capturenum in range(int(config['Acquire']['averages'])):
+        if trigdict['trigsrc'] == 3:
+            # Internal trigger
+            tracedata = cgrlib.get_uncal_forced_data(cgr,ctrl_reg)
+        elif trigdict['trigsrc'] < 3:
+            # Trigger on a voltage present at some input
+            tracedata = cgrlib.get_uncal_triggered_data(cgr,trigdict)
+        logger.info('Acquiring trace ' + str(capturenum + 1) + ' of ' +
+                    config['Acquire']['averages'])
+        if capturenum == 0:
+            sumdata = tracedata
+        else:
+            sumdata = add(sumdata,tracedata)
+        avgdata = divide(sumdata,float(capturenum +1))
 
-    # Apply calibration
-    voltdata = cgrlib.get_cal_data(caldict,gainlist,[tracedata[0],tracedata[1]])
-    timedata = cgrlib.get_timelist(fsamp_act)
+        # Apply calibration
+        voltdata = cgrlib.get_cal_data(caldict,gainlist,[avgdata[0],avgdata[1]])
+        timedata = cgrlib.get_timelist(fsamp_act)
+        logger.debug('Plotting average of ' + str(capturenum + 1) + ' traces.')
     plotdata(timedata, voltdata, trigdict)
 
 
