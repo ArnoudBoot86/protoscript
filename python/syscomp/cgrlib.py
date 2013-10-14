@@ -442,7 +442,8 @@ def force_trigger(handle, ctrl_reg):
     sendcmd(handle,'S G') # Start the capture
     sendcmd(handle,('S R ' + str(new_reg))) # Ready for forced trigger
     module_logger.info('Forcing trigger')
-    sendcmd(handle,('S D 5' )) # Force the trigger
+    sendcmd(handle,('S D 5')) # Force the trigger
+    sendcmd(handle,('S D 4')) # Return the trigger to normal mode
     # Put the control register back the way it was
     sendcmd(handle,('S R ' + str(old_reg)))
     handle.close()
