@@ -4,13 +4,13 @@
 * ------------------------ TODO list ----------------------------
 * Work on CGR code
 ** TODO Requirements for pypi package
-*** TODO Create a separate repository for cgr_capture on github
+*** DONE Create a separate repository for cgr_capture on github
     - Not really necessary, but this should be done at some point.
 *** DONE Create a .pypirc file 
     - The username and password can be in there -- this won't go on
       github.  This goes in your home directory.
 *** DONE Register at pypi
-*** TODO Create a README.txt file
+*** DONE Create a README.txt file
     - Write this in restructured text. Test the file with:
     - python setup.py --long-description | rst2html.py > output.html
 ** TODO Add support for averaging
