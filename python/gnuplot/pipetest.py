@@ -53,18 +53,26 @@ logger.addHandler(fh)
 from numpy import * # For gnuplot.py
 import Gnuplot, Gnuplot.funcutils # For gnuplot.py
 
+# Set the gnuplot executable
+Gnuplot.GnuplotOpts.gnuplot_command = 'gnuplot'
 # Use this option to turn off fifo if you get warnings like:
 # line 0: warning: Skipping unreadable file "/tmp/tmpakexra.gnuplot/fifo"
 Gnuplot.GnuplotOpts.prefer_fifo_data = 0
+# Use temporary files instead of inline data
+Gnuplot.GnuplotOpts.prefer_inline_data = 0
+# Set the default terminal
+Gnuplot.GnuplotOpts.default_term = 'x11'
 
 
 # plotdata()
 #
 # 
 def plotdata(rawdata):
-    # Set debug=1 to see gnuplot commands
+    # Set debug=1 to see commands piped to gnuplot
     gplot = Gnuplot.Gnuplot(debug=0)
+    gplot.reset()
     gplot('set terminal x11')
+    gplot.clear()
     gplot('set style data lines')
     gplot('set key bottom left')
     gplot.xlabel('X axis title')
@@ -73,12 +81,14 @@ def plotdata(rawdata):
     gplot("set format x '%0.0s %c'")
     gplot('set pointsize 1')
     gdata = Gnuplot.PlotItems.Data(rawdata,title='rawdata')
+    logger.debug('Plotting data')
     gplot.plot(gdata) # Plot the data
     gplot('set terminal postscript eps color')
     gplot("set output '" + 'pipetest.eps' + "'")
+    logger.debug('Printing to pipetest.eps')
     gplot('replot')
     gplot('set terminal x11')
-    raw_input('* Press return to dismiss plot and exit...')
+    raw_input('* Press return to dismiss plot and exit...\n')
 
 
 def main():
