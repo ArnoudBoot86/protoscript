@@ -118,4 +118,4 @@ hold on;
 plot(vanhalen_times,filtered);
 xlabel('Time (s)');
 ylabel('Stairgen output (V)');
-
+pause;
